@@ -1,41 +1,88 @@
+# This file is a to-do list that GitHub follows for you.
+# Every time I push to main, it builds my site and publishes it to GitHub Pages.
+#
+# The flow:
+#   1. build:  copy my code, check it, turn it into a website, pack it in a box
+#   2. deploy: hand the box to GitHub Pages, which shows it to visitors
+
 name: Deploy to GitHub Pages
 
+# WHEN to run this to-do list
 on:
+  # Run it every time I push code to main
   push:
     branches: [main]
+  # Also let me start it by hand with the "Run workflow" button
   workflow_dispatch:
 
+# What every job in this file is allowed to do by default.
+# "contents: read" means it may read my code and nothing else.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
+  # JOB 1: turn my code into a website and pack it in a box
   build:
+    # Use a temporary computer that GitHub lends me and then throws away
     runs-on: ubuntu-latest
     steps:
+      # Copy my code onto the temporary computer
       - uses: actions/checkout@v7
+
+      # Install Node, the program that runs my build tools.
+      # "cache: npm" remembers downloads so the next run is faster.
       - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
+
+      # Install the exact libraries listed in package-lock.json
       - run: npm ci
+
+      # Stop here if any file is formatted messily
+      - run: npm run format:check
+
+      # Stop here if the code has mistakes
       - run: npm run lint
+
+      # Turn my code into the real website. The result goes in the dist folder.
       - run: npm run build
+
+      # Pack the dist folder into a box (GitHub calls it an artifact)
+      # so the next job can pick it up
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
+  # JOB 2: hand the box to GitHub Pages so visitors can see it
   deploy:
+    # Wait until job 1 finished with no errors.
+    # This way a broken site never gets published.
     needs: build
     runs-on: ubuntu-latest
+
+    # Only this job gets these two extra permissions:
+    #   pages: write    = I am allowed to publish to GitHub Pages
+    #   id-token: write = I can ask GitHub for a temporary ID badge
+    #                     that proves this request really came from my repo
+    permissions:
+      pages: write
+      id-token: write
+
+    # Label this job as a deployment to "github-pages".
+    # GitHub keeps a history of these under the repo's Environments.
     environment:
       name: github-pages
+      # After publishing, show a clickable link to the live site.
+      # The address comes from the step below, which has the id "deployment".
       url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
+      # Show the ID badge and the box to GitHub Pages and say "publish this".
+      # The id lets the url line above find this step's result.
       - id: deployment
         uses: actions/deploy-pages@v5
