@@ -191,47 +191,7 @@ export const teleshow: Project = {
       ],
     },
   ],
-  // Test plan to come.
-  tests: {
-    approach: "",
-    cases: [],
-  },
   decisions: [
-    {
-      title: "A Flask backend, separate from the React frontend",
-      context:
-        "The heavy work, such as embeddings, scoring and parallel calls to TMDB, would slow everything down if it ran in the browser. Python was also the more familiar language at the time, and a framework that runs code on the server, like Next.js, was still unfamiliar.",
-      choice:
-        "A Flask API in Python sits between the React frontend and three outside systems: TMDB, Watchmode and Firestore. The backend holds the heavy logic, the embedding model, the scoring and the caching, and the frontend asks for results.",
-      tradeoff:
-        "Two codebases in two languages, and a server that has to be running.",
-    },
-    {
-      title: "One packaged executable, with a file-system cache",
-      context:
-        "TeleShow is deployed as an executable, which means one user per installation.",
-      choice:
-        "PyInstaller bundles the Flask server and the compiled React app into one executable, and batch scripts build the frontend, copy it into the backend and bundle everything. The server's cache is kept in the file system instead of memory. The configuration detects whether it is running as a script or as an executable, so file paths, API keys and Firebase credentials resolve in both.",
-      tradeoff:
-        "A file cache is slower than memory and is not shared between copies of the app, which only works because each installation has one user.",
-    },
-    {
-      title: "Real-time Firestore listeners with in-memory copies",
-      context: "Querying Firestore on every request made lookups slow.",
-      choice:
-        "Real-time listeners keep in-memory copies of each user's profile, ratings, comments, watchlists, followed titles and TV progress. Each listener applies only the changes Firestore reports. Watchlists have nested listeners for the titles inside each list, attached and removed as lists are created or deleted. A handler waits for the first snapshot, so the first request gets real data.",
-      tradeoff:
-        "The listeners have to be managed. Locks guard the shared caches, a guard stops the same user from being set up twice, a background thread checks every five minutes for closed connections and recreates them, and shutdown handlers clear the caches and unsubscribe every listener.",
-    },
-    {
-      title: "A lightweight pre-trained embedding model for similar titles",
-      context:
-        "Similar titles need more than matching genre tags, because the plot overview carries meaning too. A model that gives accurate results without being trained on movie data keeps the project simple.",
-      choice:
-        "A pre-trained, lightweight model, sentence-transformers/static-similarity-mrl-multilingual-v1, turns titles and overviews into embeddings, and cosine similarity measures how close each candidate is to the source title. It loads in a background thread at startup so it never delays the server. The text score is combined with genre overlap and keyword overlap, both measured with Jaccard similarity, and a small popularity factor, using fixed weights of 35% genre, 30% text, 25% keyword and 10% popularity. Titles in a different language are dropped and the top 24 are returned.",
-      tradeoff:
-        "The model is not tuned on movie data, and the weights are fixed by hand, not learned.",
-    },
     {
       title: "Content-based recommendations",
       context:
@@ -254,18 +214,27 @@ export const teleshow: Project = {
       context:
         "A single streaming service often appears under several provider IDs on TMDB. Netflix, for example, has three.",
       choice:
-        "A map groups the IDs under each service, such as Netflix, Hulu, Disney+, Amazon, Max, Paramount, Apple and Peacock, and a title matches if any of the IDs is present. The same mapping filters search results and recommendations. Each candidate needs its own provider lookup, so the lookups run in a thread pool with a timeout.",
+        "A map ties each service the app offers, which are Netflix, Hulu, Disney+, Amazon Prime, HBO Max, Apple TV+, Paramount+ and Peacock, to its TMDB provider IDs. Netflix, Disney+, Amazon, Max and Paramount each have several IDs, and a title matches a service if any of them is present. The same map filters search results and recommendations. Each candidate needs its own provider lookup, so the lookups run in a thread pool with a timeout.",
       tradeoff:
         "One extra lookup for every candidate title, and the map is kept up to date by hand.",
     },
     {
-      title: "A direct HTTP call for watch providers",
+      title: "A lightweight pre-trained embedding model for similar titles",
       context:
-        "The tmdbsimple wrapper sometimes returned nothing for the watch-provider call.",
+        "Similar titles need more than matching genre tags, because the plot overview carries meaning too. A model that gives accurate results without being trained on movie data keeps the project simple.",
       choice:
-        "That one call was replaced with a direct HTTP request to the TMDB API, and providers are deduplicated across subscription, rental and purchase offers.",
+        "A pre-trained, lightweight model, sentence-transformers/static-similarity-mrl-multilingual-v1, turns titles and overviews into embeddings, and cosine similarity measures how close each candidate is to the source title. It loads in a background thread at startup so it never delays the server. The text score is combined with genre overlap and keyword overlap, both measured with Jaccard similarity, and a small popularity factor, using fixed weights of 35% genre, 30% text, 25% keyword and 10% popularity. Titles in a different language are dropped and the top 24 are returned.",
       tradeoff:
-        "More boilerplate and less cohesion, because one call no longer goes through the same wrapper as the rest.",
+        "The model is not tuned on movie data, and the weights are fixed by hand, not learned.",
+    },
+    {
+      title: "A Flask backend, separate from the React frontend",
+      context:
+        "The heavy work, such as embeddings, scoring and parallel calls to TMDB, would slow everything down if it ran in the browser. Python is also a comfortable fit for it, with libraries and wrappers for TMDB, Firestore and embedding models.",
+      choice:
+        "A Flask API in Python sits between the React frontend and three outside systems: TMDB, Watchmode and Firestore. The backend holds the heavy logic, the embedding model, the scoring and the caching, and the frontend asks for results.",
+      tradeoff:
+        "Two codebases in two languages, and a server that has to be running.",
     },
   ],
 };

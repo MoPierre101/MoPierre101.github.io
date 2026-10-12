@@ -1,7 +1,7 @@
 // Details about the site's owner that appear on every page.
 export const site = {
   name: "Moses Pierre",
-  title: "Aspiring Systems Analyst",
+  email: "mj.pierre000@gmail.com",
   links: [
     {
       label: "LinkedIn",

@@ -8,7 +8,7 @@ export const starchart: Project = {
     "Find comic stories by describing them in plain words, see where they were published, and know what to read next.",
   overview: {
     problem:
-      "Comics are hard to navigate. One character appears across dozens of series, relaunches and renumberings, and a crossover spreads one story across several titles. Existing databases are built for cataloging, not for finding a story by what happens in it, and reading-order guides say what to read but rarely help someone find a specific kind of story. StarChart lets a reader describe the story they want and returns real records from DC, Marvel, Image, Dark Horse and BOOM! Studios, showing where each was published, where it sits in the publisher's history, and what comes next.",
+      "Comics are hard to navigate. One character appears across dozens of series, relaunches and renumberings, and a crossover spreads one story across several titles. Existing databases are built for cataloging, not for finding a story by what happens in it, and reading-order guides say what to read but rarely help someone find a specific kind of story. StarChart will let a reader describe the story they want and return real records from DC, Marvel, Image, Dark Horse and BOOM! Studios, showing where each was published, where it sits in the publisher's history, and what comes next.",
     users: [
       "Comic readers looking for a specific kind of story",
       "Newcomers from a comic book movie or show who want the comics behind it",
@@ -229,16 +229,11 @@ export const starchart: Project = {
       ],
     },
   ],
-  // Test plan to come.
-  tests: {
-    approach: "",
-    cases: [],
-  },
   decisions: [
     {
       title: "Comics only, with no TV, movie or game data",
       context:
-        "The first plan was a guide across film, television, games and comics, with separate outside metadata providers for each medium. That needed a data model general enough for any medium and several sources to keep matched to each other. Movies, television and games are also far better covered by existing databases than comics are, so the gap StarChart fills is in comics.",
+        "Movies, television and games are far better covered by existing databases than comics are, so the gap StarChart fills is in comics. A guide across every medium would also need a data model general enough for any medium and several sources to keep matched to each other.",
       choice:
         "StarChart covers comics only: DC, Marvel, Image, Dark Horse and BOOM! Studios and their sub-brands. The data model is built around publishers, series, issues and stories instead of a model that fits any franchise or medium.",
       tradeoff:
@@ -247,25 +242,16 @@ export const starchart: Project = {
     {
       title: "Build the catalog from the Grand Comics Database dump",
       context:
-        "The first plan pulled basic metadata from outside providers through their APIs and cached one response per record. That ties the catalog to each provider's availability, rate limits and caching terms.",
+        "Catalog data could come from outside providers through their APIs, each with its own availability, rate limits and caching terms.",
       choice:
         "The catalog is seeded from the Grand Comics Database (GCD) data dump, an SQLite file of about 6.75 GB refreshed roughly every two weeks, limited to the six publishers StarChart covers. New releases arrive by replacing the dump and rerunning the loader.",
       tradeoff:
         "The catalog is only as complete and current as GCD. Downloading the dump needs a free GCD account, and the load has to be rerun to pick up new issues.",
     },
     {
-      title: "Next.js with no separate backend",
-      context:
-        "An earlier plan put every business rule in a FastAPI service so mobile and desktop clients could share one API. That plan assumed the application would import and clean data itself. Now the data work happens once, when the catalog is loaded, so the application only reads clean records.",
-      choice:
-        "Next.js server code is the only code that talks to SurrealDB, checks Clerk sessions, enforces permissions and turns search queries into vectors. Every query goes through a server-only Data Access Layer that checks permissions and returns minimal results. That gives one deployment and one language for the application.",
-      tradeoff:
-        "A future mobile or desktop client has no ready-made API, so route handlers would have to be published as one or a service extracted. The project also keeps two environments: TypeScript for the app and Python for the loading scripts.",
-    },
-    {
       title: "Search by meaning with embeddings, not generated answers",
       context:
-        "Finding a story by what happens in it is the center of the product, and catalog databases are built for lookups by name. The first plan launched with full-text search, deferred natural-language search, and planned a language model to write grounded answers.",
+        "Finding a story by what happens in it is the center of the product, and catalog databases are built for lookups by name.",
       choice:
         'Each story and era gets a search entry: text built by formatting its fields in a fixed order, and a vector made from that text by an embedding model. A query is turned into a vector by the same model, filters narrow by publisher, era, series, creator and year, and the nearest entries come back as real records. No language model writes the text or the answers. Full-text search is kept for exact lookups such as "Batman #497".',
       tradeoff:
@@ -281,58 +267,13 @@ export const starchart: Project = {
         "Cover dates run a few months ahead of on-sale dates, so issues near an era boundary may need checking. Issues with no usable date are not loaded.",
     },
     {
-      title: "Model stories, and keep characters as text",
+      title: "Model stories, and load each one once",
       context:
-        "GCD records credits per story, and one issue can hold a main story and backups, so the story is the natural unit to search.",
+        "GCD records credits per story, and one issue can hold a main story and backups, so the story is the natural unit to search. GCD also records reprints, variant covers and collected editions alongside the original material, and loading all of it would show the same story many times in search.",
       choice:
-        'A story is its own record, and creator credits attach to it. Characters stay as the text GCD has on the story, such as "Batman; Tim Drake [Robin]; Bane (villain)", and feed the story\'s search text. There are no character records.',
+        'A story is its own record, and creator credits attach to it. Characters stay as the text GCD has on the story, such as "Batman; Tim Drake [Robin]; Bane (villain)", and feed the story\'s search text, with no character records. Only stories of type comic story are loaded. A story that reprints one already in the catalog is skipped, variant covers are skipped, and collected editions are not loaded, so each story appears once. Issues with no usable date and series GCD flags as not comics publications are also left out.',
       tradeoff:
-        "A character is not an exact filter. Searching for one ranks the stories whose text mentions them. There are no character pages.",
-    },
-    {
-      title: "Load each story once",
-      context:
-        "GCD records reprints, variant covers and collected editions alongside the original material. Loading all of it would show the same story many times in search.",
-      choice:
-        "Only stories of type comic story are loaded. A story that reprints one already in the catalog is skipped, variant covers are skipped, and collected editions are not loaded. Issues with no usable date and series GCD flags as not comics publications are also left out.",
-      tradeoff:
-        "A reader cannot see from StarChart where a story was later reprinted or collected.",
-    },
-    {
-      title: "Use GCD ids as record ids",
-      context:
-        "GCD refreshes its dump about every two weeks, so the loader has to run again each time without creating duplicates.",
-      choice:
-        "Imported records use their GCD id as the record id, such as issue:53372, so a rerun updates the same record instead of adding a copy. The loader is reviewed once and then runs deterministically. A language model never writes catalog records.",
-      tradeoff:
-        "Record identity is tied to GCD's ids. A rerun adds and updates records but does not remove ones GCD has since deleted.",
-    },
-    {
-      title: "Run scripts by hand instead of building a job system",
-      context:
-        "The first plan called for background workers with a queue, retries and progress reporting. Loading the catalog and building embeddings only happen occasionally, when an administrator runs them.",
-      choice:
-        "Python scripts run by hand cut the dump down to the covered publishers, load the catalog and build embeddings. A durable job system waits until a task needs scheduling, retries or progress shown in the interface.",
-      tradeoff:
-        "Refreshing the catalog is a manual step, and a failed run is not retried automatically.",
-    },
-    {
-      title: "Rewrite the loading scripts to use DuckDB",
-      context:
-        "The two scripts that load the catalog are long and hard to read: about 2,600 lines of Python, with 265 tests. Each cleaning rule is split across several small pieces of code that handle one row at a time. Speed is not the problem. Reading and deciding what to keep for every story of the six publishers takes 6.4 seconds.",
-      choice:
-        "Rewrite both scripts to use DuckDB, a tool for running database-style queries directly on a file. The first script reads the 6.75 GB download once and saves a smaller file with only the six publishers. Each cleaning rule becomes one short query that applies to a whole column of data at once. Python only does the parts a query cannot, like saving to the database. The saved records must come out identical to what the current scripts produce, which is checked table by table. This work is in progress.",
-      tradeoff:
-        "It adds DuckDB as a new tool to depend on. Two jobs, cleaning up the links inside notes and writing the search text, may turn out harder to read as queries than as Python. If so, they stay in Python and the queries call them.",
-    },
-    {
-      title: "Keep progress separate from lists",
-      context:
-        "The same issue can sit on several lists, and finishing it once should count everywhere.",
-      choice:
-        "Progress is its own record for each user and item, with a status of planned, in progress, completed or skipped. Marking an issue completed applies wherever it appears, whether or not it is on a list.",
-      tradeoff:
-        "A list item carries no state of its own, so a reader cannot keep a different status for the same item on each list.",
+        "A character is not an exact filter. Searching for one ranks the stories whose text mentions them. There are no character pages, and a reader cannot see from StarChart where a story was later reprinted or collected.",
     },
   ],
 };

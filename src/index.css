@@ -128,3 +128,47 @@
     @apply font-sans;
   }
 }
+
+/* Sliding between the info and work pages.
+   The slide runs only when the browser supports view transitions and the visitor
+   has not asked for less motion (the check lives in hooks/useSlideNavigate.ts). */
+@keyframes slide-out-left {
+  to {
+    transform: translateX(-100%);
+  }
+}
+@keyframes slide-in-from-right {
+  from {
+    transform: translateX(100%);
+  }
+}
+@keyframes slide-out-right {
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes slide-in-from-left {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+html[data-slide]::view-transition-old(root),
+html[data-slide]::view-transition-new(root) {
+  animation-duration: 0.45s;
+  animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  animation-fill-mode: both;
+  mix-blend-mode: normal;
+}
+html[data-slide="forward"]::view-transition-old(root) {
+  animation-name: slide-out-left;
+}
+html[data-slide="forward"]::view-transition-new(root) {
+  animation-name: slide-in-from-right;
+}
+html[data-slide="back"]::view-transition-old(root) {
+  animation-name: slide-out-right;
+}
+html[data-slide="back"]::view-transition-new(root) {
+  animation-name: slide-in-from-left;
+}

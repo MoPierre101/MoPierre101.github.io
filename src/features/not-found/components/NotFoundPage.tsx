@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
  * Flow:
  * 1. Sets the browser tab title to "Not found".
  * 2. Tells the visitor the page doesn't exist.
- * 3. Offers a button back to the home page.
+ * 3. Offers a button back to the work page.
  */
 export function NotFoundPage() {
   return (
@@ -18,9 +18,13 @@ export function NotFoundPage() {
       {/* Message */}
       <p className="text-muted-foreground">That page could not be found.</p>
 
-      {/* Way out: a button that is really a link to the home page */}
-      <Button variant="outline" nativeButton={false} render={<Link to="/" />}>
-        Back to all projects
+      {/* Way out: a button that is really a link to the work page */}
+      <Button
+        variant="outline"
+        nativeButton={false}
+        render={<Link to="/work" />}
+      >
+        Back to work
       </Button>
     </main>
   );

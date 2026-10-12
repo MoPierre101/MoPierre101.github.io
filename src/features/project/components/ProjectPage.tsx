@@ -1,6 +1,5 @@
 import { ArrowLeft } from "lucide-react";
 import { Link, Navigate, useParams } from "react-router";
-import { ProjectCard } from "@/components/ProjectCard";
 import { Button } from "@/components/ui/button";
 import { formatDateRange } from "@/lib/formatDateRange";
 import { findProject } from "../utils/findProject";
@@ -9,7 +8,6 @@ import { DecisionsSection } from "./DecisionsSection";
 import { DiagramsSection } from "./DiagramsSection";
 import { OverviewSection } from "./OverviewSection";
 import { StoriesSection } from "./StoriesSection";
-import { TestPlanSection } from "./TestPlanSection";
 
 /**
  * One project's case study page, shown at `/project/:id`.
@@ -17,21 +15,18 @@ import { TestPlanSection } from "./TestPlanSection";
  * Flow:
  * 1. Reads the `id` from the address (`/project/starchart` gives "starchart").
  * 2. Looks the project up. An unknown id redirects to the not-found page.
- * 3. Shows the header: back button, title, date and summary.
+ * 3. Shows the header: back button to the work page, title, date and summary.
  * 4. Shows the case study sections, or a note if the project has none yet.
- * 5. Ends with a card for the next project, when there is one.
  */
 export function ProjectPage() {
   // 1. Which project does the address ask for?
   const { id } = useParams();
 
-  // 2. Find it, along with the project that comes after it.
-  const foundProject = findProject(id);
+  // 2. Find it.
+  const project = findProject(id);
 
   // An unknown id falls through to the not-found page.
-  if (!foundProject) return <Navigate to="/404" replace />;
-
-  const { project, nextProject } = foundProject;
+  if (!project) return <Navigate to="/404" replace />;
 
   return (
     <main className="mx-auto max-w-5xl px-6 pb-24">
@@ -40,7 +35,11 @@ export function ProjectPage() {
 
       {/* 3. Header */}
       <header className="flex flex-col items-start gap-6 pt-8 pb-14">
-        <Button variant="outline" nativeButton={false} render={<Link to="/" />}>
+        <Button
+          variant="outline"
+          nativeButton={false}
+          render={<Link to="/work" />}
+        >
           <ArrowLeft data-icon="inline-start" />
           Back
         </Button>
@@ -61,21 +60,12 @@ export function ProjectPage() {
           <OverviewSection overview={project.overview} />
           <DiagramsSection diagrams={project.diagrams} />
           <StoriesSection stories={project.stories} />
-          <TestPlanSection tests={project.tests} />
           <DecisionsSection decisions={project.decisions} />
         </div>
       ) : (
         <p className="text-muted-foreground">
           This case study is still being written.
         </p>
-      )}
-
-      {/* 5. Next project (only when there is more than one project) */}
-      {nextProject && (
-        <section aria-label="Next project" className="mt-24">
-          <p className="mb-4 text-sm text-muted-foreground">Next project</p>
-          <ProjectCard project={nextProject} />
-        </section>
       )}
     </main>
   );

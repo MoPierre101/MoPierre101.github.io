@@ -5,7 +5,6 @@ export function hasContent({
   overview,
   diagrams,
   stories,
-  tests,
   decisions,
 }: Project) {
   return Boolean(
@@ -15,8 +14,6 @@ export function hasContent({
     overview?.links?.length ||
     diagrams?.length ||
     stories?.length ||
-    tests?.approach ||
-    tests?.cases?.length ||
     decisions?.length,
   );
 }

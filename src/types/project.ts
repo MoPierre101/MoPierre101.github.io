@@ -23,19 +23,6 @@ export interface Story {
   criteria: string[];
 }
 
-export interface TestCase {
-  id: string;
-  covers?: string;
-  steps: string;
-  expected: string;
-  result?: string;
-}
-
-export interface TestPlan {
-  approach?: string;
-  cases?: TestCase[];
-}
-
 export interface Decision {
   title: string;
   context?: string;
@@ -58,6 +45,5 @@ export interface Project {
   overview?: Overview;
   diagrams?: Diagram[];
   stories?: Story[];
-  tests?: TestPlan;
   decisions?: Decision[];
 }

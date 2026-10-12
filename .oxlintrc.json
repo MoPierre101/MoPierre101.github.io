@@ -3,7 +3,12 @@
   "plugins": ["react", "typescript", "oxc"],
   "rules": {
     "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+    "react/only-export-components": [
+      "warn",
+      {
+        "allowConstantExport": true
+      }
+    ]
   },
   "overrides": [
     {
@@ -13,7 +18,7 @@
       }
     },
     {
-      "files": ["src/features/home/**"],
+      "files": ["src/features/info/**"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -21,6 +26,33 @@
             "patterns": [
               {
                 "group": [
+                  "@/features/work",
+                  "@/features/work/**",
+                  "@/features/project",
+                  "@/features/project/**",
+                  "@/features/not-found",
+                  "@/features/not-found/**",
+                  "@/app",
+                  "@/app/**"
+                ],
+                "message": "A feature cannot import another feature or the app layer. Share code through src/components, src/hooks, src/data and so on, and put the features together in src/app."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/features/work/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@/features/info",
+                  "@/features/info/**",
                   "@/features/project",
                   "@/features/project/**",
                   "@/features/not-found",
@@ -44,8 +76,10 @@
             "patterns": [
               {
                 "group": [
-                  "@/features/home",
-                  "@/features/home/**",
+                  "@/features/info",
+                  "@/features/info/**",
+                  "@/features/work",
+                  "@/features/work/**",
                   "@/features/not-found",
                   "@/features/not-found/**",
                   "@/app",
@@ -67,8 +101,10 @@
             "patterns": [
               {
                 "group": [
-                  "@/features/home",
-                  "@/features/home/**",
+                  "@/features/info",
+                  "@/features/info/**",
+                  "@/features/work",
+                  "@/features/work/**",
                   "@/features/project",
                   "@/features/project/**",
                   "@/app",

@@ -118,16 +118,11 @@ export const scndcom: Project = {
       ],
     },
   ],
-  // Test plan to come.
-  tests: {
-    approach: "",
-    cases: [],
-  },
   decisions: [
     {
       title: "Create documents through the Drive API instead of the Docs API",
       context:
-        "The language model writes notes in Markdown. The Docs API doesn't accept Markdown: creating a document only makes an empty one, and the content has to be added afterward through a batch of separate requests, each one inserting text or styling a range of characters. The first attempts at creating documents failed for this reason.",
+        "The language model writes notes in Markdown. The Docs API doesn't accept Markdown: creating a document only makes an empty one, and the content has to be added afterward through a batch of separate requests, each one inserting text or styling a range of characters.",
       choice:
         "One multipart upload to the Drive API. The first part says the file is a Google Doc, and the second part is labeled as Markdown, which makes Drive's importer turn headings, bold text and bullets into Google Docs formatting. The document is created and filled in a single request, replacing the two-step create-then-update flow.",
       tradeoff:
@@ -163,7 +158,7 @@ export const scndcom: Project = {
     {
       title: "Don't commit the generated BAML code",
       context:
-        "BAML generates a TypeScript client from the model files. Three teammates were each committing their own version of it, and over time the committed copies became corrupted, so it had to be deleted and regenerated anyway.",
+        "BAML generates a TypeScript client from the model files. With three teammates each committing generated copies, those copies drift apart and end up corrupted, so they have to be deleted and regenerated anyway.",
       choice:
         "The generated client is ignored by git. Only the BAML model files are committed, and each teammate generates the client on their own machine.",
       tradeoff:
