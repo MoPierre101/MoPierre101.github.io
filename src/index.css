@@ -172,3 +172,9 @@ html[data-slide="back"]::view-transition-old(root) {
 html[data-slide="back"]::view-transition-new(root) {
   animation-name: slide-in-from-left;
 }
+
+/* The tab highlight glides to the new tab while the pages slide, at the same pace as the pages. */
+html[data-slide]::view-transition-group(tab-pill) {
+  animation-duration: 0.45s;
+  animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+}
