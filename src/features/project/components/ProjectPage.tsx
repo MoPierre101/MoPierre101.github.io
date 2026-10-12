@@ -1,5 +1,6 @@
 import { ArrowLeft } from "lucide-react";
-import { Link, Navigate, useParams } from "react-router";
+import { Navigate, useParams } from "react-router";
+import { TransitionLink } from "@/components/TransitionLink";
 import { Button } from "@/components/ui/button";
 import { formatDateRange } from "@/lib/formatDateRange";
 import { findProject } from "../utils/findProject";
@@ -16,6 +17,7 @@ import { StoriesSection } from "./StoriesSection";
  * 1. Reads the `id` from the address (`/project/starchart` gives "starchart").
  * 2. Looks the project up. An unknown id redirects to the not-found page.
  * 3. Shows the header: back button to the work page, title, date and summary.
+ *    The title and details share a view-transition name with the project's card, so they morph between the two pages.
  * 4. Shows the case study sections, or a note if the project has none yet.
  */
 export function ProjectPage() {
@@ -38,15 +40,21 @@ export function ProjectPage() {
         <Button
           variant="outline"
           nativeButton={false}
-          render={<Link to="/work" />}
+          render={<TransitionLink to="/work" />}
         >
           <ArrowLeft data-icon="inline-start" />
           Back
         </Button>
-        <h1 className="font-heading text-5xl font-medium tracking-tight text-balance sm:text-7xl">
+        <h1
+          className="font-heading text-5xl font-medium tracking-tight text-balance sm:text-7xl"
+          style={{ viewTransitionName: `project-${project.id}-title` }}
+        >
           {project.title}
         </h1>
-        <p className="text-lg text-muted-foreground">
+        <p
+          className="text-lg text-muted-foreground"
+          style={{ viewTransitionName: `project-${project.id}-meta` }}
+        >
           <span className="font-medium text-foreground">
             {formatDateRange(project.date)}
           </span>{" "}

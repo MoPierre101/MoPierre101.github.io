@@ -1,6 +1,6 @@
 import { ArrowUpRight } from "lucide-react";
 import { useLocation } from "react-router";
-import { SlideLink } from "@/components/SlideLink";
+import { TransitionLink } from "@/components/TransitionLink";
 import { Button } from "@/components/ui/button";
 import { site } from "@/config/site";
 
@@ -41,7 +41,7 @@ export function TopBar() {
                 ? pathname === "/"
                 : pathname === "/work" || pathname.startsWith("/project/");
             return (
-              <SlideLink
+              <TransitionLink
                 key={tab.to}
                 to={tab.to}
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
@@ -51,7 +51,7 @@ export function TopBar() {
                 }`}
               >
                 {tab.label}
-              </SlideLink>
+              </TransitionLink>
             );
           })}
         </nav>

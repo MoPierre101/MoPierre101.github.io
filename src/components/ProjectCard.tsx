@@ -1,5 +1,4 @@
 import { ArrowRight } from "lucide-react";
-import { Link } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -9,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { TransitionLink } from "@/components/TransitionLink";
 import { formatDateRange } from "@/lib/formatDateRange";
 import type { Project } from "@/types/project";
 
@@ -19,7 +19,7 @@ const MAX_BADGES = 5;
  * A clickable card for one project, used on the work page.
  *
  * Flow:
- * 1. The whole card is a link to the project's page (`/project/:id`).
+ * 1. The whole card is a link to the project's page (`/project/:id`). Opening it morphs the card's title and details into the page header.
  * 2. The card shows the title, then the dates and one-line summary.
  * 3. Below that, the first few stack badges, with "+N" for the rest.
  * 4. An arrow on the right nudges forward when the card is hovered.
@@ -31,15 +31,23 @@ export function ProjectCard({ project }: { project: Project }) {
 
   return (
     // 1. The link wraps the card, so the whole card is clickable.
-    <Link
+    <TransitionLink
       to={`/project/${project.id}`}
       className="group block rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
     >
       <Card className="[--card-spacing:--spacing(6)] transition-colors group-hover:bg-muted sm:[--card-spacing:--spacing(8)]">
         <CardHeader>
           {/* 2. Title, then dates and summary */}
-          <CardTitle className="text-2xl">{project.title}</CardTitle>
-          <CardDescription className="text-base">
+          <CardTitle
+            className="text-2xl"
+            style={{ viewTransitionName: `project-${project.id}-title` }}
+          >
+            {project.title}
+          </CardTitle>
+          <CardDescription
+            className="text-base"
+            style={{ viewTransitionName: `project-${project.id}-meta` }}
+          >
             <span className="font-medium text-foreground">
               {formatDateRange(project.date)}
             </span>{" "}
@@ -70,6 +78,6 @@ export function ProjectCard({ project }: { project: Project }) {
           </CardContent>
         )}
       </Card>
-    </Link>
+    </TransitionLink>
   );
 }

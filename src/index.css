@@ -131,7 +131,7 @@
 
 /* Sliding between the info and work pages.
    The slide runs only when the browser supports view transitions and the visitor
-   has not asked for less motion (the check lives in hooks/useSlideNavigate.ts). */
+   has not asked for less motion (the check lives in hooks/useTransitionNavigate.ts). */
 @keyframes slide-out-left {
   to {
     transform: translateX(-100%);
@@ -171,4 +171,16 @@ html[data-slide="back"]::view-transition-old(root) {
 }
 html[data-slide="back"]::view-transition-new(root) {
   animation-name: slide-in-from-left;
+}
+
+/* Opening a project from the work page, and going back.
+   The title and details carry the same view-transition name on the card and on the
+   project page, so the browser morphs one into the other while the rest fades. */
+html[data-morph]::view-transition-group(*) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+}
+html[data-morph]::view-transition-old(root),
+html[data-morph]::view-transition-new(root) {
+  animation-duration: 0.4s;
 }
