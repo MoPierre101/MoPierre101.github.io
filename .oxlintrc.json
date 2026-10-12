@@ -1,0 +1,108 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc"],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+  },
+  "overrides": [
+    {
+      "files": ["src/components/ui/**"],
+      "rules": {
+        "react/only-export-components": "off"
+      }
+    },
+    {
+      "files": ["src/features/home/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@/features/project",
+                  "@/features/project/**",
+                  "@/features/not-found",
+                  "@/features/not-found/**",
+                  "@/app",
+                  "@/app/**"
+                ],
+                "message": "A feature cannot import another feature or the app layer. Share code through src/components, src/hooks, src/data and so on, and put the features together in src/app."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/features/project/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@/features/home",
+                  "@/features/home/**",
+                  "@/features/not-found",
+                  "@/features/not-found/**",
+                  "@/app",
+                  "@/app/**"
+                ],
+                "message": "A feature cannot import another feature or the app layer. Share code through src/components, src/hooks, src/data and so on, and put the features together in src/app."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/features/not-found/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@/features/home",
+                  "@/features/home/**",
+                  "@/features/project",
+                  "@/features/project/**",
+                  "@/app",
+                  "@/app/**"
+                ],
+                "message": "A feature cannot import another feature or the app layer. Share code through src/components, src/hooks, src/data and so on, and put the features together in src/app."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "src/components/**",
+        "src/config/**",
+        "src/data/**",
+        "src/hooks/**",
+        "src/lib/**",
+        "src/types/**"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/features", "@/features/**", "@/app", "@/app/**"],
+                "message": "Shared code cannot import from features or the app layer. Code flows one way: shared, then features, then app."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
