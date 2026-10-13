@@ -12,7 +12,14 @@ export const jobFinder: Project = {
     users: [
       "A job seeker looking for entry-level systems and application analyst roles",
     ],
-    stack: ["Python", "GitHub Actions", "Notion API", "Exa", "pytest"],
+    stack: [
+      "Python",
+      "GitHub Actions",
+      "Notion API",
+      "Exa",
+      "sentence-transformers",
+      "pytest",
+    ],
     links: [
       {
         label: "GitHub",
@@ -27,31 +34,29 @@ export const jobFinder: Project = {
         "Runs at 8:07 AM New York time on GitHub Actions. A board that fails to load is listed at the end of the run and does not stop the others.",
       mermaid: `flowchart LR
     Fetch[1. Fetch<br/>read open jobs] --> Convert[2. Convert<br/>one common shape]
-    Convert --> Filter[3. Filter<br/>six keyword rules]
+    Convert --> Filter[3. Filter<br/>four checks]
     Filter --> Skip[4. Skip<br/>already in Notion]
     Skip --> Save[5. Save<br/>new rows as New]
-    Save --> Clean[6. Clean up<br/>close gone jobs]
+    Save --> Clean[6. Clean up<br/>remove dismissed rows<br/>of gone jobs]
     Clean --> Report[7. Report<br/>print the totals]`,
     },
     {
-      title: "The six filter rules",
+      title: "The four checks",
       caption:
-        "A job must pass every rule to be added. Failing any one drops the job, and the run records which rule dropped it.",
+        "A job must pass every check to be added. The first three are plain rules, and full descriptions are only downloaded for jobs that pass them. The last check compares the description to example jobs.",
       mermaid: `flowchart LR
     Job[Job] --> Location[1. Location<br/>NYC area or US remote]
-    Location --> Title[2. Title<br/>analyst, says junior]
-    Title --> Exclude[3. Title has no<br/>senior or lead words]
-    Exclude --> Experience[4. Experience<br/>at most 1 year]
-    Experience --> Age[5. Job posted in the last 90 days]
-    Age --> Pay[6. Pay<br/>top at most 150k]
-    Pay --> Add[Add to Notion]`,
+    Location --> Title[2. Title<br/>analyst title, no senior words]
+    Title --> Date[3. Date<br/>posted in the last 90 days]
+    Date --> Description[4. Description<br/>close to the example jobs]
+    Description --> Add[Add to Notion]`,
     },
     {
       title: "Finding new companies",
       caption:
-        "Exa searches find job boards the hand-written list doesn't have. Boards that stop producing matching jobs are dropped after 30 days.",
+        "Exa searches find company job boards. Boards that stop producing matching jobs are dropped after 30 days.",
       mermaid: `flowchart LR
-    Search[11 Exa searches a day<br/>aimed at junior analyst jobs] --> Found[New company job boards]
+    Search[7 Exa searches a day<br/>aimed at analyst roles] --> Found[New company job boards]
     Found --> Check[Check each address names<br/>a known hiring system]
     Check --> Saved[(discovered.yaml)]
     Saved --> Read[Read every saved board<br/>in each daily run]
@@ -62,15 +67,13 @@ export const jobFinder: Project = {
     {
       title: "What happens to a job in Notion",
       caption:
-        "The program only moves rows that are still New or Saved, or that are marked Not Interested. Rows marked Applied, Interview or Rejected are never changed.",
+        "The program only removes rows marked Not Interested or Closed, and only once their job has left the board. Every other row is never changed.",
       mermaid: `flowchart LR
     Add[Program adds a job] --> New[New]
     New -->|chosen by hand| Saved[Saved]
     New -->|chosen by hand| Acted[Applied, Interview<br/>or Rejected]
-    New -->|chosen by hand| NotInterested[Not Interested]
-    New -->|job leaves the board| Closed[Closed]
-    Saved -->|job leaves the board| Closed
-    NotInterested -->|job leaves the board| Trash[Moved to the Notion trash]`,
+    New -->|chosen by hand| Dismissed[Not Interested<br/>or Closed]
+    Dismissed -->|job leaves the board| Removed[Row removed]`,
     },
   ],
   stories: [
@@ -82,7 +85,7 @@ export const jobFinder: Project = {
         "It runs once a day on its own.",
         "It reads employers' hiring systems directly.",
         "Each new job becomes a row in one Notion table with its title, company, location, link, source and date posted.",
-        "A new row starts as New, and I change it as I go: Saved, Applied, Interview, Rejected or Not Interested.",
+        "A new row starts as New, and I change it as I go: Saved, Applied, Interview, Rejected, Not Interested or Closed.",
       ],
     },
     {
@@ -91,21 +94,20 @@ export const jobFinder: Project = {
         "As a job seeker, I want only roles that fit me, so I'm not sorting through noise.",
       criteria: [
         "The title is programmer analyst, systems analyst or application analyst.",
-        "The posting says it is junior and asks for at most 1 year of experience.",
-        "The job posting is no more than 90 days old.",
-        "The top of the pay range is $150,000 or less, unless the title says junior or entry level.",
-        "It is in the NYC area, New York State, New Jersey, Connecticut or Philadelphia, or it is US remote.",
         "Senior, lead, manager and similar titles are dropped.",
+        "It is in the NYC area, New Jersey, Connecticut or Philadelphia, or it is US remote.",
+        "The job posting is no more than 90 days old.",
+        "The description reads like the example jobs I want: gathering requirements, writing user stories and supporting testing, at an entry level.",
       ],
     },
     {
       id: "US-3",
       story:
-        "As a job seeker, I want to see why a job was dropped, so I can fix the rules.",
+        "As a job seeker, I want to see job postings as soon as possible from the source, so I can apply early.",
       criteria: [
-        "A practice run writes nothing to Notion.",
-        "A practice run can print every dropped job and the rule that dropped it.",
-        "All the rules live in one editable file.",
+        "It reads each employer's own hiring system, so a posting can show up here before job boards copy it.",
+        "Every morning's run adds the postings that appeared since the last run.",
+        "Each row shows the date the job was posted and the date it was added, so I can see how fresh it is.",
       ],
     },
     {
@@ -113,9 +115,8 @@ export const jobFinder: Project = {
       story: "As a job seeker, I want my table to stay clean and trustworthy.",
       criteria: [
         "A job already in the table is never added twice.",
-        "A New or Saved row becomes Closed when its job leaves the company's board.",
-        "A row I have acted on is never changed.",
-        "A board that failed to load never has its rows touched.",
+        "A row marked Not Interested or Closed is removed once its job leaves the company's board.",
+        "Every other row is never changed.",
       ],
     },
     {
@@ -131,48 +132,47 @@ export const jobFinder: Project = {
   ],
   decisions: [
     {
-      title: "Public endpoints and open data only",
+      title: "Public endpoints only, with Exa finding the companies",
       context:
-        "The biggest job sites hold the most listings, but reading them means scraping pages or pretending to be a browser.",
+        "The biggest job sites hold the most listings, but reading them means scraping pages or pretending to be a browser. Entry-level analyst jobs also sit mostly with enterprise, finance, healthcare, university and government employers, which are hard to list by hand.",
       choice:
-        "The program reads only public endpoints and open data: Greenhouse, Lever, Ashby, SmartRecruiters, Recruitee, Workday and NYC Open Data. Scraping LinkedIn or Indeed is out, and so is faking a browser to get past bot blocking.",
+        "The program reads only public endpoints and open data: Greenhouse, Lever, Ashby, SmartRecruiters, Workday and NYC Open Data. Scraping LinkedIn or Indeed is out, and so is faking a browser to get past bot blocking. NYC Jobs is built into the code, because Exa can't find city agencies. Every day, 7 Exa searches aimed at analyst roles find new company boards, up to 100 new boards a run. Each board is saved and read in every later run, and dropped after 30 days with no matching job.",
       tradeoff:
-        "Some employers can't be reached. iCIMS's terms ban automatic access, and big-tech career sites can't be read this way.",
+        "Some employers can't be reached. iCIMS's terms ban automatic access, and big-tech career sites can't be read this way. Discovery also depends on what Exa can find, and the searches cost about $5.70 a month, which fits inside Exa's monthly free credit.",
     },
     {
-      title: "Analyst roles only, and the job must say it is junior",
+      title: "Analyst titles only, with the level read from the description",
       context:
-        "The goal is entry-level systems analyst roles, so the program should keep only titles that fit.",
+        'The goal is entry-level systems analyst roles, but companies mostly post "Business Systems Analyst" and put the real level (0-2 years) in the description, so a title rarely says "junior".',
       choice:
-        'Four title phrases only: programmer analyst, systems analyst (which covers business systems analyst), application analyst and applications analyst. Plain "business analyst" is left out because it usually means a business-major role. Every job must also say it is junior, either in the title (new grad, entry level, associate, junior, I) or, with a shorter list of phrases, in the posting.',
+        'A title must contain programmer analyst, systems analyst, application analyst or applications analyst, and must not contain a senior word such as senior, lead, manager, director, intern or level II, III or IV. Plain "business analyst" is left out because it usually means a business-major role. Location (NYC, New Jersey, Connecticut, Philadelphia or US remote) and posting date (within 90 days) are plain rules too. All of these run first, so full descriptions are only downloaded for jobs that could pass.',
       tradeoff:
-        'A role with an unusual title is missed. The word "associate" counts as junior, but at some banks it means mid-level, so some of those results will not fit.',
+        "A role with an unusual title is missed, and the title rule is the narrowest part of the filter.",
     },
     {
-      title:
-        "Plain keyword rules, with experience counted by the minimum and pay by the top",
+      title: "Compare each description to example jobs by meaning",
       context:
-        'Whether a job fits comes down to clear criteria: the title, the level, the years of experience, how old the posting is, the pay and the place. Postings give ranges such as "1-3 years" or "$90k-$140k", and a rule needs one number.',
+        "The level and the real work of a job are in its description. Exact-word matching can't see them, and word lists need constant fixing.",
       choice:
-        'Six keyword rules in one editable file, with no AI in the daily run. Matching ignores case, matches whole words only, and treats spaces and hyphens as interchangeable. Experience counts by the low end of a range, with a cap of 1 year: "0-2", "1-2" and "1+" pass, and "2-5" and "3 years" are dropped. Pay counts by the top of the range, which must be $150,000 or less, and the check is skipped for titles that say new grad, junior or entry level. A job with no pay or experience information is kept. A practice run can print every dropped job and the rule that dropped it.',
+        "Four example job descriptions are written in filters.yaml, covering the work (gather requirements, write user stories, support testing) and the level (entry level, 0-2 years). Text is turned into numbers that capture its meaning, so similar wording gets similar scores. Each posting's description is split into pieces of about 150 words, the closest piece to each example is found, the four scores are averaged, and the job is kept at 0.45 or above. Pay isn't checked, because a role that fits is worth seeing at any pay.",
       tradeoff:
-        'Rules only see words. Postings say things like "associate\'s degree" or "mentor junior engineers", so the check for junior wording in the full posting uses a shorter list of phrases than the title check. Jobs that don\'t list pay or experience in a way the rules can read get through.',
+        "The comparison reads wording, so it doesn't read years of experience or pay directly, and it can't always tell an analyst job from a developer job, which is why the title rule stays. The 0.45 cutoff came from one test and may need tuning.",
     },
     {
-      title: "Find companies with Exa instead of a hand-written list",
+      title: "A sentence-transformers model, chosen by comparing three",
       context:
-        "Entry-level analyst jobs sit mostly with enterprise, finance, healthcare, university and government employers, which are hard to list by hand.",
+        "The model has to tell an analyst posting from a developer or manager one, or the description check can't pick the right jobs.",
       choice:
-        "The only hand-written entry is NYC Jobs, because Exa can't find city agencies. Every day, 11 Exa searches aimed at junior analyst jobs find new company boards, up to 100 new boards a run. Each board is saved and read in every later run, and dropped after 30 days with no matching job.",
+        "Three models were compared on real postings. spaCy's medium model gave analyst, developer and manager nearly the same numbers, and its large model squeezed every score into 0.91 to 0.98. sentence-transformers (all-MiniLM-L6-v2) reads whole passages in context, spread scores from about 0.1 to 0.7, and ranked an analyst posting above a developer one about 3 times in 4, so it is the one the app uses.",
       tradeoff:
-        "Discovery depends on what Exa can find, and there is no Philadelphia-specific search yet. The searches cost about $0.30 a day, which fits inside Exa's monthly free credit.",
+        "It is right about 3 times in 4, not every time, and it reads only about 190 words at a time, so long descriptions are cut into pieces.",
     },
     {
       title: "A status for every job, and safe cleanup",
       context:
         "Running every day means the same jobs show up again and again, and jobs eventually disappear. Every job needs to live in one place to work through.",
       choice:
-        "Every job goes in one Notion database with a status: New, Saved, Applied, Interview, Rejected, Not Interested or Closed. Each job gets an ID made of its source and the source's own ID, such as greenhouse:6136160004, and a job already in the table is skipped. When a job leaves the company's board, New and Saved rows become Closed and Not Interested rows go to the Notion trash. Rows that have been acted on are never touched, and neither are the rows of a company whose board failed to load or came back empty.",
+        "Every job goes in one Notion database with a status: New, Saved, Applied, Interview, Rejected, Not Interested or Closed. Each job gets an ID made of its source and the source's own ID, such as greenhouse:6136160004, and a job already in the table is skipped. Rows marked Not Interested or Closed are removed once their job is gone from the company's board, and rows with any other status are never touched. The row has to stay while the job is still posted, or the job would be added again.",
       tradeoff:
         "Matching is by ID and not by title, so a company that reposts a role under a new ID while the old posting is still under 90 days old shows up as a visible duplicate.",
     },

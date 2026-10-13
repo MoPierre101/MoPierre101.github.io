@@ -5,4 +5,4 @@ import { starchart } from "./starchart";
 import { teleshow } from "./teleshow";
 
 // Add a project: create src/data/projects/<id>.ts, then list it here.
-export const projects: Project[] = [starchart, jobFinder, scndcom, teleshow];
+export const projects: Project[] = [starchart, teleshow, scndcom, jobFinder];
