@@ -5,7 +5,7 @@ export const teleshow: Project = {
   title: "TeleShow",
   date: { start: "February 2025", end: "May 2025" },
   summary:
-    "Find movies and TV shows like the ones you're watching, see where to stream them, and keep watchlists, progress and a release calendar.",
+    "Discover movies and TV shows through personalized recommendations, find where to stream them, and keep watchlists, episode progress, and upcoming releases in one place.",
   overview: {
     problem:
       "People who finish a movie or show often want more like it, and want to know which of their streaming services carries it. Keeping track of what to watch and when new episodes arrive usually means juggling several sites and lists. TeleShow brings search, recommendations by streaming platform, watchlists, episode tracking and a release calendar into one place.",

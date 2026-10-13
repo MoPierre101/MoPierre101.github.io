@@ -5,7 +5,7 @@ export const starchart: Project = {
   title: "StarChart",
   date: { start: "September 2026", end: "Present" },
   summary:
-    "Find comic stories by describing them in plain words, see where they were published, and know what to read next.",
+    "A comic discovery app in development that helps readers find stories in plain language, explore their publishing history, and plan what to read next.",
   overview: {
     problem:
       "Comics are hard to navigate. One character appears across dozens of series, relaunches and renumberings, and a crossover spreads one story across several titles. Existing databases are built for cataloging, not for finding a story by what happens in it, and reading-order guides say what to read but rarely help someone find a specific kind of story. StarChart will let a reader describe the story they want and return real records from DC, Marvel, Image, Dark Horse and BOOM! Studios, showing where each was published, where it sits in the publisher's history, and what comes next.",
@@ -171,7 +171,7 @@ export const starchart: Project = {
       story:
         "As a comic reader, I want to describe a story in plain words, so I can find it without knowing the title.",
       criteria: [
-        "Results are real stories, never generated text.",
+        "Results are real stories and issues, never generated text.",
         "Each result links to its issue and series.",
         "I can narrow results by publisher, era, series, creator and year.",
         'Typing a name like "Batman #497" goes straight to that record.',

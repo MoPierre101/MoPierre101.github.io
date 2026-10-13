@@ -5,7 +5,7 @@ export const scndcom: Project = {
   title: "ScndCom",
   date: { start: "June 2026", end: "August 2026" },
   summary:
-    "Speak a note, check what the browser heard, and have it created as a Google Doc.",
+    "Turn spoken or typed requests into formatted Google Docs, with an editable transcript that lets you check what was heard before creating a document.",
   overview: {
     problem:
       "Some people would rather make notes by speaking than typing. ScndCom lets them speak a request, check and fix what the browser heard, and have it turned into a formatted Google Doc in their own Drive.",
@@ -156,7 +156,7 @@ export const scndcom: Project = {
         "A document request makes two model calls, one to classify and one to write the note, and a misclassified request goes to the wrong feature.",
     },
     {
-      title: "Don't commit the generated BAML code",
+      title: "Don't commit the generated BAML generated client",
       context:
         "BAML generates a TypeScript client from the model files. With three teammates each committing generated copies, those copies drift apart and end up corrupted, so they have to be deleted and regenerated anyway.",
       choice:
