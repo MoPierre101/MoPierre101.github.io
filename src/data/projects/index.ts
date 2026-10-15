@@ -1,6 +1,5 @@
 import type { Project } from "@/types/project";
 import { scndcom } from "./scndcom";
-import { starchart } from "./starchart";
 import { teleshow } from "./teleshow";
 import { workoutTracker } from "./workout-tracker";
 
