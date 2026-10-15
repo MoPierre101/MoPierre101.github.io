@@ -79,10 +79,10 @@ export const scndcom: Project = {
       story:
         "As someone who prefers to speak my notes, I want to say a request and see it written out, so I don't have to type it.",
       criteria: [
-        "I can start and stop listening.",
-        "A live waveform shows when it is listening.",
-        "My words appear on screen as I speak.",
-        "If my browser doesn't support speech recognition, I am told and can type my request instead.",
+        "The app lets users start and stop listening.",
+        "A live waveform shows while the app is listening.",
+        "The user's words appear on screen as they speak.",
+        "If the browser doesn't support speech recognition, the app tells the user and lets them type the request instead.",
       ],
     },
     {
@@ -90,10 +90,10 @@ export const scndcom: Project = {
       story:
         "As someone whose accent or speech impediment trips up speech recognition, I want to fix what was misheard before anything runs.",
       criteria: [
-        "The transcript opens in a box I can edit.",
-        "Nothing is sent until I confirm.",
-        "I can cancel instead of confirming.",
-        "I can type a request from scratch instead of speaking.",
+        "The transcript opens in an editable box.",
+        "Nothing is sent until the user confirms.",
+        "The app lets users cancel instead of confirming.",
+        "The app lets users type a request from scratch instead of speaking.",
       ],
     },
     {
@@ -103,8 +103,8 @@ export const scndcom: Project = {
       criteria: [
         "The request is classified before anything is created.",
         "The document gets a title and content with headings, bold text and bullets.",
-        "I get a link to open the finished document.",
-        "If something fails, an error says what went wrong.",
+        "The app gives the user a link to open the finished document.",
+        "If something fails, the app shows an error saying what went wrong.",
       ],
     },
     {
@@ -112,9 +112,9 @@ export const scndcom: Project = {
       story:
         "As a user, I want to sign in, so my documents are created in my own Google account.",
       criteria: [
-        "Sign in and sign up appear when I am signed out, and my account menu appears when I am signed in.",
-        "A request from someone who is not signed in is rejected.",
-        "The document is created with my own Google access.",
+        "The app shows sign in and sign up when the user is signed out, and an account menu when they are signed in.",
+        "The app rejects a request from a user who is not signed in.",
+        "The app creates the document using the user's own Google access.",
       ],
     },
   ],
