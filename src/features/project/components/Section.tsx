@@ -19,14 +19,18 @@ interface SectionProps {
  */
 export function Section({ id, title, children }: SectionProps) {
   return (
-    <section id={id} aria-labelledby={`${id}-title`}>
+    <section
+      id={id}
+      aria-labelledby={`${id}-title`}
+      className="project-section scroll-mt-28"
+    >
       {/* 1. Divider */}
-      <Separator className="mb-10" />
+      <Separator className="mb-7" />
 
       {/* 2. Heading */}
       <h2
         id={`${id}-title`}
-        className="mb-8 font-heading text-3xl font-medium tracking-tight sm:text-4xl"
+        className="mb-7 font-heading text-xl leading-snug font-medium tracking-[-0.025em] sm:text-2xl"
       >
         {title}
       </h2>

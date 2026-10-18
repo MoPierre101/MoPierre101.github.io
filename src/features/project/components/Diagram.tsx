@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from "react";
 import { useMermaid } from "../hooks/useMermaid";
 
 interface DiagramProps {
@@ -18,23 +19,73 @@ interface DiagramProps {
 export function Diagram({ number, title, caption, code }: DiagramProps) {
   // 1. Draw the diagram. `svg` is the finished picture, `failed` is true if drawing went wrong.
   const { svg, failed } = useMermaid(code);
+  const viewport = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const frame = viewport.current;
+    const entry = frame?.querySelector(".node, .entityBox");
+    if (!frame || !entry || !svg) return;
+    const bounds = frame.getBoundingClientRect();
+    const node = entry.getBoundingClientRect();
+    const clippedX =
+      node.left < bounds.left + 16 || node.right > bounds.right - 16;
+    const clippedY =
+      node.top < bounds.top + 16 || node.bottom > bounds.bottom - 16;
+    frame.scrollTo({
+      left: clippedX
+        ? Math.max(
+            0,
+            frame.scrollLeft +
+              node.left +
+              node.width / 2 -
+              bounds.left -
+              frame.clientWidth / 2,
+          )
+        : frame.scrollLeft,
+      top: clippedY
+        ? Math.max(
+            0,
+            frame.scrollTop +
+              node.top +
+              node.height / 2 -
+              bounds.top -
+              frame.clientHeight / 2,
+          )
+        : frame.scrollTop,
+      behavior: "instant",
+    });
+  }, [svg]);
 
   return (
-    <figure className="flex flex-col gap-3">
+    <figure className="project-diagram flex min-w-0 flex-col gap-4">
       {/* 2. Label */}
-      <figcaption>
-        <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+      <figcaption className="max-w-[74ch]">
+        <p className="mb-1 text-[0.6875rem] leading-relaxed font-medium tracking-[0.08em] text-muted-foreground uppercase">
           Figure {number}
         </p>
-        <h3 className="font-heading text-xl font-medium">{title}</h3>
-        {caption && <p className="mt-1 text-muted-foreground">{caption}</p>}
+        <h3 className="font-heading text-lg leading-snug font-medium tracking-[-0.015em]">
+          {title}
+        </h3>
+        {caption && (
+          <p className="mt-2 text-sm leading-7 text-muted-foreground">
+            {caption}
+          </p>
+        )}
       </figcaption>
 
       {/* 3. The picture, in a box that scrolls sideways if the diagram is wide */}
       <div
+        ref={viewport}
         role="img"
         aria-label={title}
-        className="overflow-x-auto rounded-xl bg-card p-6 ring-1 ring-foreground/10 [&_svg]:mx-auto [&_svg]:h-auto [&_svg]:max-w-full"
+        aria-busy={!svg && !failed}
+        tabIndex={0}
+        data-kind={
+          code.trimStart().startsWith("sequenceDiagram")
+            ? "sequence"
+            : "diagram"
+        }
+        className="project-diagram-viewport max-h-[min(70vh,40rem)] min-h-48 min-w-0 overflow-auto rounded-lg border border-border bg-card p-4 sm:p-6 [&_svg]:mx-auto [&_svg]:h-auto [&_svg]:max-w-none"
       >
         {failed ? (
           <p className="text-muted-foreground">

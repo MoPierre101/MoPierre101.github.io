@@ -21,7 +21,7 @@ export function DiagramsSection({
   return (
     <Section id="diagrams" title="Diagrams">
       {/* 3. One figure per diagram, numbered from 1 */}
-      <div className="flex flex-col gap-12">
+      <div className="project-diagrams flex flex-col gap-9 sm:gap-10">
         {diagrams.map((diagram, index) => (
           <Diagram
             key={diagram.title}

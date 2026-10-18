@@ -19,13 +19,16 @@ export function OverviewSection({ overview }: { overview?: Overview }) {
   if (!problem && !users.length && !stack.length && !links.length) return null;
 
   return (
-    <section aria-label="Overview" className="grid gap-10 md:grid-cols-2">
+    <section
+      aria-label="Overview"
+      className="project-overview grid gap-9 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:gap-12"
+    >
       {/* 3. Left column. Each Detail hides itself when its list is empty. */}
-      <dl className="flex flex-col gap-8">
+      <dl className="flex min-w-0 flex-col gap-7">
         {/* Stack: one badge per technology */}
         <Detail term="Stack">
           {stack.length > 0 && (
-            <ul className="flex flex-wrap gap-2">
+            <ul className="flex flex-wrap gap-1.5">
               {stack.map((item) => (
                 <li key={item}>
                   <Badge variant="secondary">{item}</Badge>
@@ -38,7 +41,7 @@ export function OverviewSection({ overview }: { overview?: Overview }) {
         {/* Users: who the project is for */}
         <Detail term="Users">
           {users.length > 0 && (
-            <ul className="list-disc space-y-1 pl-5">
+            <ul className="list-disc space-y-2 pl-4 text-muted-foreground">
               {users.map((user) => (
                 <li key={user}>{user}</li>
               ))}
@@ -56,7 +59,7 @@ export function OverviewSection({ overview }: { overview?: Overview }) {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="underline underline-offset-4"
+                    className="inline-flex min-h-11 items-center underline decoration-border underline-offset-4 transition-colors hover:decoration-current"
                   >
                     {link.label}
                   </a>
@@ -69,11 +72,11 @@ export function OverviewSection({ overview }: { overview?: Overview }) {
 
       {/* 4. Right column: the problem */}
       {problem && (
-        <div>
-          <p className="mb-2 text-xs font-medium tracking-widest text-muted-foreground uppercase">
+        <div className="min-w-0">
+          <p className="mb-2 text-[0.6875rem] leading-relaxed font-medium tracking-[0.08em] text-muted-foreground uppercase">
             Problem
           </p>
-          <p className="text-lg leading-relaxed">{problem}</p>
+          <p className="max-w-[68ch] text-base leading-7">{problem}</p>
         </div>
       )}
     </section>
