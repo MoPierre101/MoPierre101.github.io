@@ -32,11 +32,7 @@ export function StoriesSection({ stories = [] }: { stories?: Story[] }) {
                 <CardDescription className="text-[0.6875rem] font-medium tracking-[0.08em] uppercase">
                   {story.id}
                 </CardDescription>
-                <CardTitle
-                  role="heading"
-                  aria-level={3}
-                  className="max-w-[70ch] text-base leading-7 font-medium"
-                >
+                <CardTitle className="max-w-[70ch] text-base leading-7 font-medium">
                   {story.story}
                 </CardTitle>
               </CardHeader>

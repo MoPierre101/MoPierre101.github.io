@@ -418,6 +418,9 @@ main:focus {
 .project-diagram-viewport[data-kind="sequence"] {
   height: clamp(25rem, 55vw, 40rem);
 }
+.project-diagram-viewport svg * {
+  filter: none !important;
+}
 @keyframes page-out {
   to {
     opacity: 0;

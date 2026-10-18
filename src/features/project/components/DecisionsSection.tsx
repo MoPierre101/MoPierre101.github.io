@@ -29,11 +29,7 @@ export function DecisionsSection({
             <Card className="[--card-spacing:--spacing(6)]">
               {/* What was decided */}
               <CardHeader>
-                <CardTitle
-                  role="heading"
-                  aria-level={3}
-                  className="text-lg leading-snug"
-                >
+                <CardTitle className="text-lg leading-snug">
                   {decision.title}
                 </CardTitle>
               </CardHeader>
