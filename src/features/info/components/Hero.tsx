@@ -16,7 +16,16 @@ export function Hero() {
         <div className="info-introduction">
           <h1>{hero.intro}</h1>
           <p className="info-about">{hero.about}</p>
-          <p className="info-education">{hero.education}</p>
+          <p className="info-education">
+            <a
+              href="https://www.farmingdale.edu/curriculum/bs-cpis.shtml"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-inherit no-underline"
+            >
+              {hero.education}
+            </a>
+          </p>
         </div>
         <div className="info-skills">
           <h2>Skills</h2>
