@@ -29,12 +29,12 @@ export function ProjectPage() {
   if (!project) return <Navigate to="/404" replace />;
 
   return (
-    <main className="mx-auto max-w-5xl px-6 pb-24">
+    <main className="project-page site-container pb-20" tabIndex={-1}>
       {/* Tab title: the project's name (React moves this into <head>) */}
       <title>{project.title}</title>
 
       {/* 3. Header */}
-      <header className="flex flex-col items-start gap-6 pt-8 pb-14">
+      <header className="project-header flex flex-col items-start gap-5 pt-8 pb-12 sm:pt-10 sm:pb-14">
         <Button
           variant="outline"
           nativeButton={false}
@@ -43,11 +43,11 @@ export function ProjectPage() {
           <ArrowLeft data-icon="inline-start" />
           Back
         </Button>
-        <h1 className="font-heading text-5xl font-medium tracking-tight text-balance sm:text-7xl">
+        <h1 className="max-w-full font-heading text-[2rem] leading-tight font-medium tracking-[-0.035em] text-balance sm:text-[2.75rem]">
           {project.title}
         </h1>
-        <p className="text-lg text-muted-foreground">
-          <span className="font-medium text-foreground">
+        <p className="max-w-[74ch] text-[0.9375rem] leading-7 text-muted-foreground">
+          <span className="text-[0.8125rem] font-medium text-foreground tabular-nums">
             {formatDateRange(project.date)}
           </span>{" "}
           — {project.summary}
@@ -56,7 +56,7 @@ export function ProjectPage() {
 
       {/* 4. Case study. Each section hides itself when it has no data. */}
       {hasContent(project) ? (
-        <div className="flex flex-col gap-20">
+        <div className="project-sections flex flex-col gap-14 sm:gap-16">
           <OverviewSection overview={project.overview} />
           <DiagramsSection diagrams={project.diagrams} />
           <StoriesSection stories={project.stories} />

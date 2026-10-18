@@ -22,27 +22,27 @@ export function StoriesSection({ stories = [] }: { stories?: Story[] }) {
 
   return (
     <Section id="stories" title="Requirements and user stories">
-      <ol className="flex flex-col gap-4">
+      <ol className="project-stories flex flex-col gap-4">
         {/* 3. One card per story */}
         {stories.map((story) => (
           <li key={story.id}>
             <Card className="[--card-spacing:--spacing(6)]">
               {/* Story id and the story itself */}
               <CardHeader>
-                <CardDescription className="text-xs font-medium tracking-widest uppercase">
+                <CardDescription className="text-[0.6875rem] font-medium tracking-[0.08em] uppercase">
                   {story.id}
                 </CardDescription>
-                <CardTitle className="text-lg font-normal">
+                <CardTitle className="max-w-[70ch] text-base leading-7 font-medium">
                   {story.story}
                 </CardTitle>
               </CardHeader>
 
               {/* How we know the story is done */}
               <CardContent>
-                <p className="mb-2 text-xs font-medium tracking-widest text-muted-foreground uppercase">
+                <p className="mb-3 text-[0.6875rem] leading-relaxed font-medium tracking-[0.08em] text-muted-foreground uppercase">
                   Acceptance criteria
                 </p>
-                <ul className="list-disc space-y-1 pl-5">
+                <ul className="max-w-[74ch] list-disc space-y-2 pl-4 text-[0.9375rem] leading-7 text-muted-foreground">
                   {story.criteria.map((criterion) => (
                     <li key={criterion}>{criterion}</li>
                   ))}

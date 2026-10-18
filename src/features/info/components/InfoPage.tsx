@@ -10,7 +10,7 @@ import { Hero } from "./Hero";
  */
 export function InfoPage() {
   return (
-    <main>
+    <main tabIndex={-1}>
       {/* Tab title (React moves this into <head>) */}
       <title>{site.name}</title>
 

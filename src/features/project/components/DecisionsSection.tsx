@@ -22,19 +22,21 @@ export function DecisionsSection({
 
   return (
     <Section id="decisions" title="Decisions and tradeoffs">
-      <ul className="flex flex-col gap-4">
+      <ul className="project-decisions flex flex-col gap-4">
         {/* 3. One card per decision */}
         {decisions.map((decision) => (
           <li key={decision.title}>
             <Card className="[--card-spacing:--spacing(6)]">
               {/* What was decided */}
               <CardHeader>
-                <CardTitle className="text-xl">{decision.title}</CardTitle>
+                <CardTitle className="text-lg leading-snug">
+                  {decision.title}
+                </CardTitle>
               </CardHeader>
 
               {/* Why, what was picked, and what it cost */}
               <CardContent>
-                <dl className="grid gap-6 sm:grid-cols-3">
+                <dl className="grid gap-6 lg:grid-cols-3 lg:gap-7">
                   <Detail term="Context">{decision.context}</Detail>
                   <Detail term="Choice">{decision.choice}</Detail>
                   <Detail term="Tradeoff">{decision.tradeoff}</Detail>

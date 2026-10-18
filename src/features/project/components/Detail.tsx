@@ -18,14 +18,14 @@ export function Detail({ term, children }: DetailProps) {
   if (!children) return null;
 
   return (
-    <div>
+    <div className="min-w-0">
       {/* 2. Label */}
-      <dt className="mb-2 text-xs font-medium tracking-widest text-muted-foreground uppercase">
+      <dt className="mb-2 text-[0.6875rem] leading-relaxed font-medium tracking-[0.08em] text-muted-foreground uppercase">
         {term}
       </dt>
 
       {/* 2. Content */}
-      <dd>{children}</dd>
+      <dd className="text-[0.9375rem] leading-7">{children}</dd>
     </div>
   );
 }
