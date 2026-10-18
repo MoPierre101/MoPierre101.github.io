@@ -10,13 +10,13 @@ import { projects } from "@/data/projects";
  */
 export function WorkPage() {
   return (
-    <main className="mx-auto max-w-5xl px-6 pt-12 pb-24">
+    <main className="site-container work-page" tabIndex={-1}>
       {/* Tab title (React moves this into <head>) */}
       <title>Work</title>
       <h1 className="sr-only">Work</h1>
 
       {/* Project list */}
-      <ul className="flex flex-col gap-6">
+      <ul className="flex flex-col gap-4">
         {projects.map((project) => (
           <li key={project.id}>
             <ProjectCard project={project} />

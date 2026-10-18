@@ -11,12 +11,12 @@ import { Button } from "@/components/ui/button";
  */
 export function NotFoundPage() {
   return (
-    <main className="mx-auto flex max-w-5xl flex-col items-start gap-4 px-6 py-24">
+    <main className="site-container not-found-page" tabIndex={-1}>
       {/* Tab title (React moves this into <head>) */}
       <title>Not found</title>
 
       {/* Message */}
-      <p className="text-muted-foreground">That page could not be found.</p>
+      <h1 className="text-lg font-medium">That page could not be found.</h1>
 
       {/* Way out: a button that is really a link to the work page */}
       <Button

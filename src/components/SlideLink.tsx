@@ -1,8 +1,8 @@
 import type { ComponentProps, MouseEvent } from "react";
-import { NavLink } from "react-router";
+import { Link } from "react-router";
 import { useSlideNavigate } from "@/hooks/useSlideNavigate";
 
-type SlideLinkProps = Omit<ComponentProps<typeof NavLink>, "to"> & {
+type SlideLinkProps = Omit<ComponentProps<typeof Link>, "to"> & {
   to: string;
 };
 
@@ -31,5 +31,5 @@ export function SlideLink({ to, onClick, ...props }: SlideLinkProps) {
     slideNavigate(to);
   }
 
-  return <NavLink to={to} onClick={handleClick} {...props} />;
+  return <Link to={to} onClick={handleClick} {...props} />;
 }
