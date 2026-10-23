@@ -5,27 +5,26 @@ export const starchart: Project = {
   title: "StarChart",
   date: { start: "September 2026", end: "Present" },
   summary:
-    "A comic discovery app in development that lets readers describe a story in plain language, find where it was published, and see how it fits into a publisher's history.",
+    "A data pipeline that cleans the Grand Comics Database into a Postgres database for 13 publishers of US comics, with a read-only search API on top.",
   overview: {
     problem:
-      "Comics are hard to navigate. One character appears across dozens of series, relaunches and renumberings, and a crossover spreads one story across several titles. Existing databases are built for cataloging, not for finding a story by what happens in it, and reading-order guides say what to read but rarely help someone find a specific kind of story. StarChart will let a reader describe the story they want and return real records from DC, Marvel, Image, Dark Horse, BOOM! Studios and eight other publishers, showing where each was published and where it sits in the publisher's history.",
+      "The Grand Comics Database (GCD) is a community-built archive of comics from every publisher in the world. Its download is about 6.7 GB and isn't ready to use as it stands. It includes deleted entries and columns nobody needs. Some dates are incomplete, like 2000-06-00, which Postgres can't store. Text carries placeholder marks and invisible characters. Some credits point at people who aren't in the download. StarChart keeps 13 publishers, cleans their data with SQL, and loads it into a Postgres database that is ready to query. It has tables for series, issues, stories, creators and characters. A search API sits on top.",
     users: [
-      "Comic readers looking for a specific story",
-      "TV and movie watchers who want the comics behind a show or film",
-      "History explorers who want to see how a publisher's work developed",
-      "Parents and guardians who want to know whether an issue is family friendly",
+      "App developers who need a clean, narrow comics catalog to build on",
+      "Analysts who want to query comics publishing history in SQL",
     ],
     stack: [
-      "Next.js",
-      "React",
-      "TypeScript",
-      "Supabase (Postgres, Auth and Edge Functions)",
-      "pgvector",
-      "gte-small",
       "Python",
       "SQLite",
       "pgloader",
-      "Grand Comics Database (GCD) API",
+      "PostgreSQL",
+      "SQL",
+      "pg_trgm",
+      "Encore.ts",
+      "TypeScript",
+      "Prisma",
+      "Vitest",
+      "uv",
     ],
     links: [],
   },
@@ -33,21 +32,20 @@ export const starchart: Project = {
     {
       title: "Catalog loading pipeline",
       caption:
-        "How the catalog gets into the database. The full Grand Comics Database (GCD) download is stripped down to the 13 publishers StarChart covers, loaded into a raw holding schema with pgloader, cleaned with SQL into a reference schema, and used to build the app's derived tables and search embeddings. The file shrinks from 6.3 GB to 592 MB.",
+        "How the catalog gets into the database. The full Grand Comics Database (GCD) download is stripped down to the 13 publishers StarChart covers, loaded into a temporary copy in Postgres with pgloader, and cleaned with SQL into the gcd tables, which the search API reads. The file shrinks from about 6.7 GB to about 620 MB.",
       mermaid: `flowchart LR
-    Dump[(Full GCD dump<br/>6.3 GB)] --> Strip[Strip to<br/>13 publishers]
-    Strip --> Small[(stripped.db<br/>592 MB)]
+    Dump[(Full GCD download<br/>6.7 GB)] --> Strip[Strip to<br/>13 publishers]
+    Strip --> Small[(stripped.db<br/>620 MB)]
     Small --> Load[pgloader]
     Load --> Raw[(gcd_raw<br/>temporary)]
     Raw --> Clean[SQL clean]
-    Clean --> Gcd[(gcd<br/>reference data)]
-    Gcd --> Derived[Derived tables<br/>in starchart]
-    Gcd --> Embed[Search embeddings<br/>in starchart]`,
+    Clean --> Gcd[(gcd<br/>clean tables)]
+    Gcd --> Api[Encore.ts<br/>search API]`,
     },
     {
       title: "Catalog data model",
       caption:
-        "The cleaned GCD schema. A series holds issues, and an issue holds stories. A variant (alternate cover) points back to its regular issue. Credits and characters hang off the story, and reprints link a story or issue to the one it reprints.",
+        "The cleaned GCD tables. A series holds issues, and an issue holds stories. A variant (alternate cover) points back to its regular issue. Credits and characters attach to the story, and reprints link a story or issue to the one it reprints.",
       mermaid: `erDiagram
     publisher ||--o{ series : publishes
     series ||--o{ issue : contains
@@ -66,156 +64,141 @@ export const starchart: Project = {
     {
       id: "US-1",
       story:
-        "As a comic reader, I want to describe a story in plain words, so I can find it without the title.",
+        "As an app developer, I want to search issues by what a user types, so I can find an issue from a series name, year, number or title.",
       criteria: [
-        "The app turns the query into a vector with the same model that embedded the stories and returns the nearest stories.",
-        "Each result shows its series, issue and cover, and links to the issue.",
-        "Results can be narrowed by publisher, date range, creator, character, and single issue vs. collection.",
-        "Variant covers don't appear as separate results. They are grouped under the regular issue.",
+        "Search matches what the user types against one line per issue: series name, series start year, issue number, issue year and title. Partial names still find it.",
+        "Results can be narrowed by format (single issue, collection or graphic novel), publisher and year range.",
+        "Variant covers don't appear as separate results.",
+        "Results come in pages. Each response says how to fetch the next page, and says nothing on the last page.",
       ],
     },
     {
       id: "US-2",
       story:
-        "As a movie or TV watcher, I want to look up a character, so I can read where they began.",
+        "As an app developer, I want to search creators and characters by any name, so an alias or pen name still finds the right record.",
       criteria: [
-        "A character page shows the character's first appearance and major series.",
-        "First appearances are computed from structured character rows, never from free text.",
-        "Search can be filtered by character.",
+        "A creator or character matches on its official name or any other name.",
+        "A creator or character result shows the other name that matched.",
       ],
     },
     {
       id: "US-3",
       story:
-        "As a history explorer, I want a publisher timeline, so I can see what came out when.",
+        "As an app developer, I want one call that returns the top results of each kind, so a search bar can show a dropdown.",
       criteria: [
-        "The timeline lists regular issues by date, with first-appearance milestones marked.",
-        "Dates show the precision GCD records: a year, a year and month, or a full date.",
-        "Issues with no usable date stay in the catalog but are left off the timeline.",
-        "Publisher renames and imprints appear, for example Detective Comics, then National, then DC.",
+        "One call returns the top five issues, creators and characters.",
+        "The text must be 3 to 100 characters.",
       ],
     },
     {
       id: "US-4",
       story:
-        "As a reader, I want a crossover's issues in order across titles, so I know what to read next.",
+        "As an analyst, I want a rating on every issue, so I can tell all-ages comics from mature ones.",
       criteria: [
-        "The app lists an arc's issues in publication order across titles.",
-        "Order comes only from GCD story arcs. The app invents none.",
-        "A story with no arc has no reading order, and the app shows none.",
+        "Every issue shows a rating: all ages, comics code, teen, mature, other or unknown.",
+        "Issues with no rating signal show unknown, never a guess.",
       ],
     },
     {
       id: "US-5",
       story:
-        "As a reader, I want a release calendar and the ability to follow a publisher or series, so I hear about new releases.",
+        "As the maintainer, I want one script that rebuilds the catalog from a new download, so the data can be refreshed without hand-fixing.",
       criteria: [
-        "The calendar shows upcoming issues that aren't in the dump yet.",
-        "A signed-in reader's follow is saved by publisher or series.",
-        "A new announcement for something followed triggers a notification.",
-      ],
-    },
-    {
-      id: "US-6",
-      story:
-        "As a reader, I want a creator's page, so I can see their run across series.",
-      criteria: [
-        "The page lists the stories a creator is credited on, grouped by series.",
-        "Pages come from credit rows. Credits that exist only as text don't create a page.",
-      ],
-    },
-    {
-      id: "US-7",
-      story:
-        "As a parent, I want a family-friendly label, so I know whether to open an issue with my child.",
-      criteria: [
-        "Every issue and story shows FF, NFF or Unknown.",
-        "Issues with no rating signal show Unknown, never a guess.",
-        "NFF content stays searchable and visible, with the warning.",
-      ],
-    },
-    {
-      id: "US-8",
-      story:
-        "As a reader, I want a link to a library or store, so I can read what I found.",
-      criteria: [
-        "An issue or collection page shows its stored links, each with a label and URL.",
-        "The page says so when no links exist.",
+        "One run strips, loads and cleans the download.",
+        "Each run rebuilds the clean tables from scratch.",
       ],
     },
   ],
   decisions: [
     {
-      title: "Use GCD as the single source of truth",
+      title: "Use the GCD download as the single source of truth",
       context:
-        "Catalog data could come from several outside providers, each with its own ids, rate limits and terms, and their records would need matching to each other.",
+        "Catalog data could come from several providers, each with its own id numbers and terms, and their records would need matching to each other.",
       choice:
-        "The Grand Comics Database supplies series, issues, stories and cover images under one set of ids, so there is no matching step. A one-time data dump seeds the catalog. The GCD API supplies covers, fetched when a series is first opened, and only the cover URL is stored.",
+        "The Grand Comics Database supplies series, issues, stories, creators and characters under one set of id numbers, so there is no matching step. A one-time download seeds the catalog, and the data is credited to the GCD.",
       tradeoff:
-        "The catalog follows GCD's coverage. Anonymous API access has per-hour limits, may be turned off, and its data format is not stable, so the app throttles from response headers. Cover images are not under GCD's license, so the app links to them and never copies them.",
+        "The catalog follows GCD's coverage, which is uneven. Of 519,817 comic stories in the stripped download, 148,870 (29%) have a synopsis of 100 characters or more.",
     },
     {
       title: "Limit the catalog to 13 publishers",
       context:
-        "The dump covers every publisher, language and publication type, and most of it is not the comic content StarChart is for.",
+        "The download covers every publisher, language and publication type, and most of it is not the comic content StarChart is for.",
       choice:
-        "The app keeps 13 publishers, English, Spanish and French only, and comic, text, cartoon and photo stories. It drops non-comics, giveaway, promo and ashcan series (799 series and 1,839 issues). The dump shrinks from 6.3 GB to 592 MB.",
+        "The pipeline keeps 13 publishers, English, Spanish and French only, and comic, text, cartoon and photo stories. It drops non-comics, giveaway, promo and ashcan series (799 series and 1,839 issues). The download shrinks from about 6.7 GB to about 620 MB.",
       tradeoff:
-        "A smaller catalog loads and searches quickly. Choosing publishers by id rather than country keeps Titan, which GCD lists as a UK publisher.",
+        "A smaller catalog loads and searches quickly. Choosing publishers one by one rather than by country keeps Titan, which GCD lists as a UK publisher.",
     },
     {
-      title: "Separate reference data from app data",
+      title: "Build a step-by-step pipeline that can be rerun",
       context:
-        "A newer GCD dump has to be loaded without touching users, follows or embeddings.",
+        "The raw download holds deleted rows, unused columns, and inconsistent dates, text and credits.",
       choice:
-        "The cleaned gcd schema is reference data, dropped and rebuilt on every run. The starchart schema holds app data, and its tables are keyed by plain GCD ids with no foreign keys into gcd. Tables worked out from the catalog are rebuilt after every run. Embeddings, covers, follows and other app-created data are never rebuilt.",
+        "The pipeline trims the download to the 13 publishers, loads it into a temporary copy in Postgres with pgloader, cleans it with SQL into gcd, and deletes the temporary copy.",
       tradeoff:
-        "A re-clean cannot damage user data. The cost is that nothing enforces the links, so a check after each run reports any ids a newer dump no longer contains.",
+        "Each cleaning rule lives in one place and can rerun without reloading. Changing the trimming rules means starting over from a fresh download.",
     },
     {
-      title: "Build a staged, rerunnable pipeline",
+      title: "Keep only rows that link to kept data",
       context:
-        "The raw dump holds deleted rows, unused columns, and inconsistent dates, text and credits.",
+        "GCD entries can refer to entries missing from the download, and the database's link check would reject them.",
       choice:
-        "The pipeline strips the dump to the 13 publishers, loads it with pgloader into a temporary raw schema, cleans it with SQL into gcd, drops the raw schema, then builds the derived tables.",
+        "Credits that name a missing creator (23,959 story credits and 7,323 issue credits) and character appearances that name a missing character (71,097) are dropped. Reprints are kept only when both issues are kept. The 156 series bonds and 13 story-arc relations with one end outside the kept data are dropped.",
       tradeoff:
-        "Each cleaning rule has one place to live and can rerun without reloading. A change to the stripping rules means starting again from a fresh dump.",
+        "Every kept link points at something that is kept, so the database can enforce its links. Links to anything outside the 13 publishers, mostly foreign editions, are lost.",
     },
     {
-      title: "Search by meaning with embeddings",
+      title: "Tag each issue as single issue, collection or graphic novel",
       context:
-        "Finding a story by what happens in it is the core of the product, and catalog databases are built for lookups by name.",
+        "Reprint links alone mislabel reprint one-shots as collections and miss original material in collections.",
       choice:
-        "Stories are turned into vectors by an embedding model, and a reader's query is turned into a vector by the same model. Filters narrow the candidates and the nearest vectors come back as real records. The model is gte-small (384 dimensions), run in Supabase Edge Functions. Each vector stores the model that made it and a fingerprint of its source text.",
+        'The format text GCD volunteers enter is lowercased. A series whose format contains "collected" is a collection. A series whose format contains "graphic novel", or an issue that has an ISBN (a book number) and a book-style binding and isn\'t already a collection, is a graphic novel. Everything else is a single issue.',
       tradeoff:
-        "At 1,536 dimensions the vectors would take about 3.4 GB. A 384-dimension model takes a quarter of that, which matters against Supabase's free tier of about 500 MB. The model is a low-commitment starting test, and changing it later means re-embedding every story.",
+        "Search can filter by format. The rule depends on how volunteers word that text.",
     },
     {
       title: "Keep variants, search regular issues only",
       context:
-        "Alternate covers are separate records in GCD, and they would flood search results and the timeline.",
+        "Alternate covers are separate records in GCD, and they would flood search results.",
       choice:
-        "Every variant is kept and linked to its regular issue. Search, the timeline, the calendar and counts use regular issues only. An issue page lists its variants and loads their covers on demand.",
+        "Every variant is kept and linked to its regular issue. Search returns regular issues only.",
       tradeoff:
-        "Keeping variants preserves reprint links and covers. Some issues have many variants, so their covers load in pages instead of all at once.",
+        "Keeping variants preserves reprint links. Variant credits that merely copy the regular issue's are dropped.",
     },
     {
-      title: "Derive the FF/NFF label from a rating class",
+      title: "Store a rating on every issue and story",
       context:
         "Most issues have no printed rating, and the tags that could signal mature content were too weak to rely on.",
       choice:
-        "Every issue and story gets a rating class worked out from the printed rating and the story's genre, and the app reads the FF, NFF or Unknown label from that class. A hand-kept correction can override a series.",
+        "Every issue and story gets a rating (all ages, comics code, teen, mature, other or unknown) worked out from the printed rating and the story's genre.",
       tradeoff:
-        "Unrated issues show Unknown instead of a guess. Because the app reads the label from the class, the family-friendly line can move without a new pipeline run.",
+        "Unrated issues show unknown instead of a guess. Anyone reading the data can draw their own line between ratings.",
     },
     {
-      title: "Store dates as parts with a precision",
+      title: "Store dates in parts, with how exact they are",
       context:
-        "GCD dates can be a year only, a month with no day, or a value like 2000-06-00 that a Postgres date cannot hold.",
+        "GCD dates can be a year only, a month with no day, or a value like 2000-06-00 that Postgres can't store.",
       choice:
-        "Cover and on-sale dates become year, month and day as separate numbers, plus a precision and a derived sortable date. An invalid day becomes null and the month is kept.",
+        "Cover and on-sale dates become separate year, month and day numbers, plus a note of how exact the date is (year only, year and month, or full date) and a date that can be sorted. An invalid day is left blank and the month is kept.",
       tradeoff:
-        "The model keeps what GCD actually knows without inventing a day. Issues with no usable date stay in the catalog but drop out of date-based views.",
+        "The data keeps what GCD actually knows without inventing a day. Issues with no usable date stay in the catalog but drop out of date-based views.",
+    },
+    {
+      title: "Store one search line on each issue",
+      context:
+        'A user types things like a series name and a number, such as "batman 2016 50". The pieces of an issue\'s name live in different tables: the series name and start year, the issue number, the issue year and the title.',
+      choice:
+        'When the pipeline builds the gcd.issue table, it also fills a search_text column with the series name, series start year, issue number, issue year and title, for example "Batman 2016 #50 2018 The Wedding". Search compares what the user types against that one line, using pg_trgm, a Postgres extension for matching partial and similar text. Creator names, their other names, character names and their other names are matched the same way, with indexes that keep it fast.',
+      tradeoff:
+        "The line repeats information held in other tables and is rebuilt on every pipeline run. In exchange, matching works against one indexed column instead of several tables.",
+    },
+    {
+      title: "Serve reads from one Encore.ts service",
+      context:
+        "The cleaned data is only useful if clients can read it without writing their own SQL.",
+      choice:
+        "One Encore.ts service, catalog, offers the search endpoints and rejects any request that doesn't fit the expected shape. It reads the database through Prisma, and the search queries are written directly in SQL.",
+      tradeoff:
+        "The endpoints only read. Each page is fetched by skipping the results already shown.",
     },
   ],
 };
