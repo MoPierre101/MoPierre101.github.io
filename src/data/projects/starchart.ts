@@ -26,7 +26,9 @@ export const starchart: Project = {
       "Vitest",
       "uv",
     ],
-    links: [],
+    links: [
+      { label: "GitHub", url: "https://github.com/MoPierre101/starchart" },
+    ],
   },
   diagrams: [
     {
