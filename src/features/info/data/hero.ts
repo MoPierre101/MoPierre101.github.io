@@ -10,8 +10,10 @@ export const hero = {
     {
       category: "Analysis",
       items: [
+        "Requirements and user stories",
         "Technical documentation",
         "Data modeling",
+        "Process and data-model diagrams",
         "REST API debugging",
         "Incident triage and escalation",
         "Agile sprints",
@@ -19,7 +21,7 @@ export const hero = {
     },
     {
       category: "Data",
-      items: ["SQL", "Firebase Firestore", "Supabase"],
+      items: ["SQL", "PostgreSQL", "Firebase Firestore", "Supabase"],
     },
     {
       category: "Languages & Frameworks",
