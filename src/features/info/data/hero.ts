@@ -1,8 +1,8 @@
 export const hero = {
   intro:
-    "Entry-level systems analyst with experience building and documenting software.",
+    "Systems and data analyst with experience building and documenting software.",
   about:
-    "Each project under Work is a case study with requirements and user stories, diagrams, and the decisions behind it.",
+    "Each project under Work is a case study with requirements, user stories, diagrams, the data behind it, and the decisions I made.",
   education:
     "B.S. in Computer Programming and Information Systems, Farmingdale State College (SUNY), 2025.",
   // Same groups and wording as the resume's technical skills.
