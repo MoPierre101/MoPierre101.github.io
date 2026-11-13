@@ -1,6 +1,6 @@
 export const hero = {
   intro:
-    "Systems and data analyst with experience building and documenting software.",
+    "Systems analyst focused on troubleshooting, data validation, operational workflows, and documentation.",
   about:
     "Each project under Work is a case study with requirements, user stories, diagrams, the data behind it, and the decisions I made.",
   education:
@@ -8,36 +8,48 @@ export const hero = {
   // Same groups and wording as the resume's technical skills.
   skills: [
     {
-      category: "Analysis",
+      category: "Analysis, Support & Operations",
       items: [
         "Requirements and user stories",
-        "Technical documentation",
-        "Data modeling",
-        "Process and data-model diagrams",
+        "acceptance criteria",
+        "workflow and process analysis",
+        "decision documentation",
+        "data validation and reconciliation",
+        "incident triage and escalation",
+        "root-cause troubleshooting",
         "REST API debugging",
-        "Incident triage and escalation",
-        "Agile sprints",
+        "cross-functional coordination",
+        "Agile sprints / SDLC",
       ],
     },
     {
-      category: "Data",
-      items: ["SQL", "PostgreSQL", "Firebase Firestore", "Supabase"],
+      category: "Systems & Platforms",
+      items: [
+        "Windows",
+        "macOS",
+        "UNIX operating systems",
+        "networking fundamentals",
+        "process and ER diagrams (Lucidchart)",
+        "Notion",
+        "Git",
+        "GitHub",
+      ],
     },
     {
-      category: "Languages & Frameworks",
+      category: "Data & Languages",
       items: [
+        "SQL",
+        "PostgreSQL",
+        "Firebase Firestore",
+        "Supabase",
+        "data modeling",
         "Python",
         "TypeScript",
         "JavaScript",
         "Java",
         "HTML",
         "CSS",
-        "React",
       ],
-    },
-    {
-      category: "Tools",
-      items: ["Git", "GitHub", "GitHub Actions", "pytest", "BAML"],
     },
   ],
   location: "Based in NYC.",
