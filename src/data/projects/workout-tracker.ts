@@ -7,7 +7,8 @@ export const workoutTracker: Project = {
     start: "October 2024",
     end: "December 2024",
   },
-  summary: "JavaFX fitness application with dedicated exercise video library.",
+  summary:
+    "JavaFX (desktop UI framework) fitness application with a dedicated exercise video library.",
   overview: {
     problem:
       "Gym goers needed a central place to find exercise demonstrations that could help them understand movements and work toward better workout form. The video library addressed this need through browsing, search, and playback within the fitness application.",
@@ -28,9 +29,9 @@ export const workoutTracker: Project = {
     {
       title: "Video discovery and playback",
       caption:
-        "The controller lists Firebase Storage objects, filters them by category or search term, and passes a media URL to the JavaFX player. This diagram covers my video-library contribution.",
+        "The controller lists Firebase Storage objects (cloud-stored video files), filters them by category or search term, and passes a media URL (streaming link) to the JavaFX player. This diagram covers my video-library contribution.",
       mermaid:
-        "flowchart TD\n  A[Exercise library] --> B[Choose level and body area]\n  A --> C[Enter search term]\n  B --> D[VideosController]\n  C --> D\n  D --> E[List objects in Firebase Storage]\n  E --> F[Filter by type metadata or filename]\n  F --> I[Construct Firebase media URLs]\n  I --> G[Display selectable video results]\n  G --> H[Select a demonstration]\n  H --> J[JavaFX MediaPlayer]\n  K[Firebase-hosted MP4] -->|Media URL| J\n  J --> L[Watch, pause, resume, and loop]\n  L --> M[Back to previous results]",
+        "flowchart TD\n  A[Exercise library] --> B[Choose level and body area]\n  A --> C[Enter search term]\n  B --> D[VideosController<br/>library logic]\n  C --> D\n  D --> E[List objects in Firebase Storage<br/>cloud video files]\n  E --> F[Filter by type metadata<br/>category tag or filename]\n  F --> I[Construct Firebase media URLs<br/>streaming links]\n  I --> G[Display selectable video results]\n  G --> H[Select a demonstration]\n  H --> J[JavaFX MediaPlayer<br/>in-app video player]\n  K[Firebase-hosted MP4] -->|Media URL| J\n  J --> L[Watch, pause, resume, and loop]\n  L --> M[Back to previous results]",
     },
   ],
   stories: [
@@ -41,7 +42,7 @@ export const workoutTracker: Project = {
       criteria: [
         "The library offers Beginner, Intermediate, and Advanced levels.",
         "Each level offers Upper, Core, and Lower categories.",
-        "Selecting a category displays MP4 videos whose type metadata matches that category.",
+        "Selecting a category displays MP4 videos whose type metadata (category tag) matches that category.",
         "The selection list is scrollable and each video has a selectable name.",
       ],
     },
@@ -83,7 +84,7 @@ export const workoutTracker: Project = {
         "As a gym goer comparing exercises, I want to return from a video to my previous results so that I can choose another demonstration without repeating my search or category selection.",
       criteria: [
         "The player provides a Back button.",
-        "Selecting Back stops and disposes of the active media player.",
+        "Selecting Back stops and disposes of the active media player (releases the video player from memory).",
         "Back restores the saved result content, window title, and window dimensions.",
         "The restored result list provides selectable videos.",
       ],
@@ -96,7 +97,7 @@ export const workoutTracker: Project = {
       context:
         "I wanted gym goers to watch exercise demonstrations without having to download video files to their devices before viewing them.",
       choice:
-        "I chose Firebase Storage to host the MP4 videos and built URL-based playback in JavaFX. The controller constructs media URLs from object names and download-token metadata and passes them to MediaPlayer.",
+        "I chose Firebase Storage (cloud file storage) to host the MP4 videos and built URL-based playback in JavaFX. The controller constructs media URLs (streaming links) from object names (file paths) and download-token metadata (secure access keys) and passes them to MediaPlayer (the built-in video player).",
       tradeoff:
         "Users can watch without managing video downloads in advance, but streaming depends on internet access, storage availability, and valid media URLs.",
     },
@@ -114,27 +115,27 @@ export const workoutTracker: Project = {
       context:
         "A key technical challenge was accessing the Firebase-hosted videos and mapping each storage folder to the correct category in the exercise library.",
       choice:
-        "I mapped folder prefixes such as bu/ and ic/ to type metadata during initialization, then used that metadata to filter videos for each category and generated selection buttons from the filenames.",
+        "I mapped folder prefixes such as bu/ (Beginner Upper) and ic/ (Intermediate Core) to type metadata (category tags attached to each file) during initialization, then used that metadata to filter videos for each category and generated selection buttons from the filenames.",
       tradeoff:
-        "This connects stored files directly to the library without a separate video-catalog database, but depends on consistent naming and adds storage reads and metadata writes during initialization.",
+        "This connects stored files directly to the library without a separate video-catalog database, but depends on consistent naming and adds storage reads and metadata writes during initialization (app startup).",
     },
     {
       title: "Search filenames using case-insensitive text matching",
       context:
         "Users who know an exercise name need a direct way to find it across categories.",
       choice:
-        "List stored video objects and compare lowercased filenames with the lowercased search term, then display matches or a no-results message.",
+        "List stored video objects (files in cloud storage) and compare lowercased filenames with the lowercased search term, then display matches or a no-results message.",
       tradeoff:
-        "The implementation is simple for a small library, but scans the bucket on each search and relies on filenames rather than descriptions, synonyms, or ranked results.",
+        "The implementation is simple for a small library, but scans the bucket (the cloud storage container) on each search and relies on filenames rather than descriptions, synonyms, or ranked results.",
     },
     {
       title: "Keep playback and repeat viewing inside JavaFX",
       context:
         "Reviewing an exercise demonstration requires control over viewing pace and a way to continue browsing afterward.",
       choice:
-        "Use MediaPlayer and MediaView with pause/resume, a progress indicator, automatic looping, and saved result state for Back navigation.",
+        "Use MediaPlayer and MediaView (JavaFX's video playback and display components) with pause/resume, a progress indicator, automatic looping, and saved result state for Back navigation.",
       tradeoff:
-        "Users can review demonstrations within the application, but the controller must manage playback resources and navigation state. The implemented controls do not include seeking or playback-speed adjustment.",
+        "Users can review demonstrations within the application, but the controller must manage playback resources and navigation state. The implemented controls do not include seeking (jumping to a timestamp) or playback-speed adjustment.",
     },
   ],
 };

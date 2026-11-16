@@ -39,21 +39,21 @@ export const teleshow: Project = {
     {
       title: "System overview",
       caption:
-        "The React app only talks to the Flask backend. The backend talks to TMDB, Watchmode and Firestore, keeps an in-memory copy of each user's data, and runs the embedding model.",
+        "The React app (browser interface) only talks to the Flask backend (Python server). The backend talks to TMDB (movie/TV catalog), Watchmode (streaming availability) and Firestore (cloud database), keeps an in-memory copy of each user's data (a fast working copy in server memory), and runs the embedding model (AI text-matching model).",
       mermaid: `flowchart LR
-    App[React app] --> API[Flask backend]
-    API --> TMDB[TMDB API]
-    API --> Watchmode[Watchmode API]
-    API --> Cache[(Response cache<br/>on disk)]
-    API --> Model[Embedding model]
+    App[React app<br/>browser UI] --> API[Flask backend<br/>Python server]
+    API --> TMDB[TMDB API<br/>movie & TV catalog]
+    API --> Watchmode[Watchmode API<br/>streaming links]
+    API --> Cache[(Response cache<br/>saved on disk)]
+    API --> Model[Embedding model<br/>AI text matcher]
     API --> Memory[(In-memory copies<br/>of user data)]
-    API -->|writes| Firestore[(Firebase Firestore)]
-    Firestore -->|real-time listeners| Memory`,
+    API -->|writes| Firestore[(Firebase Firestore<br/>cloud database)]
+    Firestore -->|real-time listeners<br/>live updates| Memory`,
     },
     {
       title: "Firestore data model",
       caption:
-        "Each user has subcollections for watchlists, followed media, TV progress, calendar entries and learned interests. Each watchlist holds its own media, and each title has one of five statuses: plan to watch, watching, on hold, stopped or finished. A show's progress holds its seasons and, for each episode, a watched flag and timestamp.",
+        "Each user has subcollections (nested database folders) for watchlists, followed media, TV progress, calendar entries and learned interests. Each watchlist holds its own media, and each title has one of five statuses: plan to watch, watching, on hold, stopped or finished. A show's progress holds its seasons and, for each episode, a watched flag and timestamp.",
       mermaid: `erDiagram
     user ||--o{ watchlist : owns
     watchlist ||--o{ watchlist_media : holds
@@ -87,7 +87,7 @@ export const teleshow: Project = {
     {
       title: "Search",
       caption:
-        "Movie and TV lookups run at the same time on separate threads. When a streaming platform is chosen, each title gets its own provider lookup.",
+        "Movie and TV lookups run at the same time on separate threads (parallel background workers). When a streaming platform is chosen, each title gets its own provider lookup.",
       mermaid: `flowchart LR
     Query[Query and filters] --> Movies[Movie search<br/>own thread]
     Query --> TV[TV search<br/>own thread]
@@ -100,7 +100,7 @@ export const teleshow: Project = {
     {
       title: "Similar-title recommendations",
       caption:
-        "A pool of candidates is scored and cut to the top 100, then re-scored with the embedding model, genre overlap, keyword overlap and popularity.",
+        "A pool of candidates is scored and cut to the top 100, then re-scored with the embedding model (comparing plot themes), genre overlap, keyword overlap and popularity.",
       mermaid: `flowchart LR
     Source[Source title] --> Pool[Candidate pool<br/>genre, keyword and company<br/>searches run in parallel]
     Pool --> First[Score by popularity, vote,<br/>genres and release year<br/>keep the top 100]
@@ -195,9 +195,9 @@ export const teleshow: Project = {
     {
       title: "Content-based recommendations",
       context:
-        "To recommend a title, something has to decide which titles fit a user. Approaches based on other users' behavior need a lot of interaction data, and they can't suggest a title nobody has interacted with yet.",
+        "To recommend a title, something has to decide which titles fit a user. Collaborative filtering (approaches based on other users' behavior) needs a lot of interaction data and suffers from the cold-start problem (it can't suggest a title nobody has interacted with yet).",
       choice:
-        "Recommendations are content-based. A title is scored from its own attributes, which are genres, keywords, production companies and overview text, together with what the user follows. Other users' behavior is not used. This applies to recommendations only, and search results use their own relevance score.",
+        "Recommendations are content-based (matching a title's own traits to the user's tastes). A title is scored from its own attributes, which are genres, keywords, production companies and overview text, together with what the user follows. Other users' behavior is not used. This applies to recommendations only, and search results use their own relevance score.",
       tradeoff:
         "It can only suggest titles that resemble what the user already follows, and it depends on the quality of the attributes TMDB has for each title.",
     },
@@ -206,15 +206,15 @@ export const teleshow: Project = {
       context:
         "A viewer asks two different questions: what is similar to this title, and what should I watch next.",
       choice:
-        "Similar-title recommendations start from one source title. Personalized recommendations start from the genres, keywords and production companies a user has accumulated by following titles. They build a movie pool and a TV pool, remove everything the user already follows or has on a watchlist, optionally narrow the results to the user's streaming platforms, and sort by popularity. Both draw candidates from a shared function that searches TMDB by genre, keyword and production company in parallel and falls back to highly rated titles in the same primary genre when the pool is too small.",
+        "Similar-title recommendations start from one source title. Personalized recommendations start from the genres, keywords and production companies a user has accumulated by following titles. They build a movie pool and a TV pool, remove everything the user already follows or has on a watchlist, optionally narrow the results to the user's streaming platforms, and sort by popularity. Both draw candidates from a shared function that searches TMDB by genre, keyword and production company in parallel (at the same time) and falls back to highly rated titles in the same primary genre when the pool is too small.",
       tradeoff: "Two code paths to maintain, built on one shared pool.",
     },
     {
       title: "Platform-specific results through grouped provider IDs",
       context:
-        "A single streaming service often appears under several provider IDs on TMDB. Netflix, for example, has three.",
+        "A single streaming service often appears under several provider IDs (catalog codes) on TMDB. Netflix, for example, has three.",
       choice:
-        "A map ties each service the app offers, which are Netflix, Hulu, Disney+, Amazon Prime, HBO Max, Apple TV+, Paramount+ and Peacock, to its TMDB provider IDs. Netflix, Disney+, Amazon, Max and Paramount each have several IDs, and a title matches a service if any of them is present. The same map filters search results and recommendations. Each candidate needs its own provider lookup, so the lookups run in a thread pool with a timeout.",
+        "A map ties each service the app offers, which are Netflix, Hulu, Disney+, Amazon Prime, HBO Max, Apple TV+, Paramount+ and Peacock, to its TMDB provider IDs. Netflix, Disney+, Amazon, Max and Paramount each have several IDs, and a title matches a service if any of them is present. The same map filters search results and recommendations. Each candidate needs its own provider lookup, so the lookups run in a thread pool (a group of parallel background workers) with a timeout (a maximum wait limit so slow responses don't freeze the search).",
       tradeoff:
         "One extra lookup for every candidate title, and the map is kept up to date by hand.",
     },
@@ -223,16 +223,16 @@ export const teleshow: Project = {
       context:
         "Similar titles need more than matching genre tags, because the plot overview carries meaning too. A model that gives accurate results without being trained on movie data keeps the project simple.",
       choice:
-        "A pre-trained, lightweight model, sentence-transformers/static-similarity-mrl-multilingual-v1, turns titles and overviews into embeddings, and cosine similarity measures how close each candidate is to the source title. It loads in a background thread at startup so it never delays the server. The text score is combined with genre overlap and keyword overlap, both measured with Jaccard similarity, and a small popularity factor, using fixed weights of 35% genre, 30% text, 25% keyword and 10% popularity. Titles in a different language are dropped and the top 24 are returned.",
+        "A pre-trained, lightweight model, sentence-transformers/static-similarity-mrl-multilingual-v1, turns titles and overviews into embeddings (lists of numbers that capture a text's underlying meaning), and cosine similarity (a score measuring how closely two meanings align) measures how close each candidate is to the source title. It loads in a background thread (a separate worker process) at startup so it never delays the server. The text score is combined with genre overlap and keyword overlap, both measured with Jaccard similarity (the percentage of shared items between two lists), and a small popularity factor, using fixed weights of 35% genre, 30% text, 25% keyword and 10% popularity. Titles in a different language are dropped and the top 24 are returned.",
       tradeoff:
         "The model is not tuned on movie data, and the weights are fixed by hand, not learned.",
     },
     {
       title: "A Flask backend, separate from the React frontend",
       context:
-        "The heavy work, such as embeddings, scoring and parallel calls to TMDB, would slow everything down if it ran in the browser. Python is also a comfortable fit for it, with libraries and wrappers for TMDB, Firestore and embedding models.",
+        "The heavy work, such as embeddings (text-meaning calculations), scoring and parallel calls to TMDB, would slow everything down if it ran in the browser. Python is also a comfortable fit for it, with libraries and wrappers for TMDB, Firestore and embedding models.",
       choice:
-        "A Flask API in Python sits between the React frontend and three outside systems: TMDB, Watchmode and Firestore. The backend holds the heavy logic, the embedding model, the scoring and the caching, and the frontend asks for results.",
+        "A Flask API (Python web server) sits between the React frontend (the user interface in the browser) and three outside systems: TMDB, Watchmode and Firestore. The backend holds the heavy logic, the embedding model, the scoring and the caching (saving recent responses to avoid repeat lookups), and the frontend asks for results.",
       tradeoff:
         "Two codebases in two languages, and a server that has to be running.",
     },

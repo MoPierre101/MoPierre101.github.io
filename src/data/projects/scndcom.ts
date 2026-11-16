@@ -50,24 +50,24 @@ export const scndcom: Project = {
       mermaid: `sequenceDiagram
     actor User
     participant Dash as Dashboard
-    participant Intent as Intent route
-    participant Doc as Document route
-    participant Clerk
+    participant Intent as Intent route (classifier)
+    participant Doc as Document route (creator)
+    participant Clerk as Clerk (sign-in & auth)
     participant LLM as BAML and OpenAI
     participant Drive as Google Drive API
     User->>Dash: Speak or type a request
     Dash->>User: Show the transcript to review
     User->>Dash: Edit and confirm
     Dash->>Intent: Send the transcript
-    Intent->>LLM: ParseIntent
+    Intent->>LLM: ParseIntent (classify request)
     LLM-->>Intent: Category and summary
     Intent-->>Dash: Document request
     Dash->>Doc: Send the transcript
-    Doc->>Clerk: Get the user's Google access token
+    Doc->>Clerk: Get the user's Google access token (permission key)
     Clerk-->>Doc: Token
-    Doc->>LLM: CreateGDoc
+    Doc->>LLM: CreateGDoc (draft note)
     LLM-->>Doc: Title and Markdown content
-    Doc->>Drive: One multipart upload
+    Doc->>Drive: One multipart upload (settings + content)
     Drive-->>Doc: New document id
     Doc-->>Dash: Link to the document
     Dash-->>User: Show the link`,
@@ -122,9 +122,9 @@ export const scndcom: Project = {
     {
       title: "Create documents through the Drive API instead of the Docs API",
       context:
-        "The language model writes notes in Markdown. The Docs API doesn't accept Markdown: creating a document only makes an empty one, and the content has to be added afterward through a batch of separate requests, each one inserting text or styling a range of characters.",
+        "The language model writes notes in Markdown (plain text with simple formatting symbols like # for headings and * for bullets). The Docs API doesn't accept Markdown: creating a document only makes an empty one, and the content has to be added afterward through a batch of separate requests, each one inserting text or styling a range of characters.",
       choice:
-        "One multipart upload to the Drive API. The first part says the file is a Google Doc, and the second part is labeled as Markdown, which makes Drive's importer turn headings, bold text and bullets into Google Docs formatting. The document is created and filled in a single request, replacing the two-step create-then-update flow.",
+        "One multipart upload (a single request combining file settings and content) to the Drive API. The first part says the file is a Google Doc, and the second part is labeled as Markdown, which makes Drive's importer turn headings, bold text and bullets into Google Docs formatting. The document is created and filled in a single request, replacing the two-step create-then-update flow.",
       tradeoff:
         "The content has to go through Drive before it becomes a Doc, so the app needs Drive access, and Drive's importer decides how the Markdown is formatted.",
     },
@@ -133,14 +133,14 @@ export const scndcom: Project = {
       context:
         "The app needs more than text back from the model. A document needs a title and Markdown content, and a request needs a category. Free-form replies would have to be parsed by hand and could come back in the wrong shape.",
       choice:
-        "BAML functions describe the shape of each response as a class, such as a document with a title, Markdown content and topics, or an intent with a category and a one-line summary. The functions call OpenAI models and return typed objects, which the Next.js API routes pass on to the app.",
+        "BAML (a prompting toolkit that enforces structured AI outputs) functions describe the shape of each response as a class (a strict data template), such as a document with a title, Markdown content and topics, or an intent with a category and a one-line summary. The functions call OpenAI models and return typed objects (predictable, structured data with verified fields), which the Next.js API routes (server endpoints) pass on to the app.",
       tradeoff:
-        "The app depends on BAML and on OpenAI, and BAML generates the TypeScript client code that the app imports.",
+        "The app depends on BAML and on OpenAI, and BAML generates the TypeScript client code (helper functions) that the app imports.",
     },
     {
       title: "Show the transcript for review before anything runs",
       context:
-        "Browser speech recognition, the Web Speech API, is less reliable for accents and speech impediments. A misheard word would otherwise go straight into a document.",
+        "Browser speech recognition, the Web Speech API (the browser's built-in voice-to-text feature), is less reliable for accents and speech impediments. A misheard word would otherwise go straight into a document.",
       choice:
         "After speaking, a dialog shows the transcript in an editable box. The request is only sent when the user confirms, and the user can cancel or type a request from scratch.",
       tradeoff:
@@ -151,18 +151,18 @@ export const scndcom: Project = {
       context:
         "One voice box can receive more than one kind of request, so the app has to know what the user wants before it does anything.",
       choice:
-        "A BAML function reads the confirmed transcript and returns a category and a one-line summary. The dashboard then calls the matching feature's API route, and anything that isn't clearly a known kind of request is marked unknown. Document requests go to document creation.",
+        "A BAML function reads the confirmed transcript and returns a category and a one-line summary. The dashboard then calls the matching feature's API route (server endpoint), and anything that isn't clearly a known kind of request is marked unknown. Document requests go to document creation.",
       tradeoff:
         "A document request makes two model calls, one to classify and one to write the note, and a misclassified request goes to the wrong feature.",
     },
     {
-      title: "Don't commit the generated BAML generated client",
+      title: "Don't commit the generated BAML client",
       context:
-        "BAML generates a TypeScript client from the model files. With three teammates each committing generated copies, those copies drift apart and end up corrupted, so they have to be deleted and regenerated anyway.",
+        "BAML generates a TypeScript client (auto-written helper code) from the model files. With three teammates each committing (saving to the shared code repository) generated copies, those copies drift apart and end up corrupted, so they have to be deleted and regenerated anyway.",
       choice:
-        "The generated client is ignored by git. Only the BAML model files are committed, and each teammate generates the client on their own machine.",
+        "The generated client is ignored by git (version control). Only the BAML model files are committed, and each teammate generates the client on their own machine.",
       tradeoff:
-        "A fresh clone doesn't run until the client is generated, which is an extra setup step for everyone.",
+        "A fresh clone (a newly downloaded copy of the project) doesn't run until the client is generated, which is an extra setup step for everyone.",
     },
   ],
 };
