@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import { Link, Navigate, useParams } from "react-router";
 import { Button } from "@/components/ui/button";
+import { site } from "@/config/site";
 import { formatDateRange } from "@/lib/formatDateRange";
 import { findProject } from "../utils/findProject";
 import { hasContent } from "../utils/hasContent";
@@ -15,7 +16,7 @@ import { StoriesSection } from "./StoriesSection";
  * Flow:
  * 1. Reads the `id` from the address (`/project/starchart` gives "starchart").
  * 2. Looks the project up. An unknown id redirects to the not-found page.
- * 3. Shows the header: back button to the work page, title, date and summary.
+ * 3. Shows the header: back button to the work page, title, date, summary and section jump-links.
  * 4. Shows the case study sections, or a note if the project has none yet.
  */
 export function ProjectPage() {
@@ -28,10 +29,35 @@ export function ProjectPage() {
   // An unknown id falls through to the not-found page.
   if (!project) return <Navigate to="/404" replace />;
 
+  const { problem, users = [], stack = [], links = [] } =
+    project.overview ?? {};
+  const hasOverview = Boolean(
+    problem || users.length || stack.length || links.length,
+  );
+  const toc = [
+    hasOverview && { id: "overview", label: "Overview" },
+    (project.diagrams?.length ?? 0) > 0 && {
+      id: "diagrams",
+      label: "Diagrams",
+    },
+    (project.stories?.length ?? 0) > 0 && {
+      id: "stories",
+      label: "User stories",
+    },
+    (project.decisions?.length ?? 0) > 0 && {
+      id: "decisions",
+      label: "Decisions",
+    },
+  ].filter(Boolean) as { id: string; label: string }[];
+
+  function scrollToSection(sectionId: string) {
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
+  }
+
   return (
     <main className="project-page site-container pb-20" tabIndex={-1}>
       {/* Tab title: the project's name (React moves this into <head>) */}
-      <title>{project.title}</title>
+      <title>{`${project.title} — ${site.name}`}</title>
 
       {/* 3. Header */}
       <header className="project-header flex flex-col items-start gap-5 pt-8 pb-12 sm:pt-10 sm:pb-14">
@@ -52,6 +78,23 @@ export function ProjectPage() {
           </span>{" "}
           — {project.summary}
         </p>
+        {toc.length > 1 && (
+          <nav
+            aria-label="Case study sections"
+            className="flex flex-wrap items-center gap-2 pt-1"
+          >
+            {toc.map((item) => (
+              <Button
+                key={item.id}
+                variant="secondary"
+                size="sm"
+                onClick={() => scrollToSection(item.id)}
+              >
+                {item.label}
+              </Button>
+            ))}
+          </nav>
+        )}
       </header>
 
       {/* 4. Case study. Each section hides itself when it has no data. */}
@@ -61,6 +104,16 @@ export function ProjectPage() {
           <DiagramsSection diagrams={project.diagrams} />
           <StoriesSection stories={project.stories} />
           <DecisionsSection decisions={project.decisions} />
+          <div className="pt-2">
+            <Button
+              variant="outline"
+              nativeButton={false}
+              render={<Link to="/work" />}
+            >
+              <ArrowLeft data-icon="inline-start" />
+              Back to Work
+            </Button>
+          </div>
         </div>
       ) : (
         <p className="text-muted-foreground">

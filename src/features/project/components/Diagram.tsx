@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { useMermaid } from "../hooks/useMermaid";
 
 interface DiagramProps {
@@ -20,40 +20,57 @@ export function Diagram({ number, title, caption, code }: DiagramProps) {
   // 1. Draw the diagram. `svg` is the finished picture, `failed` is true if drawing went wrong.
   const { svg, failed } = useMermaid(code);
   const viewport = useRef<HTMLDivElement>(null);
+  const [scrollable, setScrollable] = useState(false);
 
   useLayoutEffect(() => {
     const frame = viewport.current;
     const entry = frame?.querySelector(".node, .entityBox");
-    if (!frame || !entry || !svg) return;
-    const bounds = frame.getBoundingClientRect();
-    const node = entry.getBoundingClientRect();
-    const clippedX =
-      node.left < bounds.left + 16 || node.right > bounds.right - 16;
-    const clippedY =
-      node.top < bounds.top + 16 || node.bottom > bounds.bottom - 16;
-    frame.scrollTo({
-      left: clippedX
-        ? Math.max(
-            0,
-            frame.scrollLeft +
-              node.left +
-              node.width / 2 -
-              bounds.left -
-              frame.clientWidth / 2,
-          )
-        : frame.scrollLeft,
-      top: clippedY
-        ? Math.max(
-            0,
-            frame.scrollTop +
-              node.top +
-              node.height / 2 -
-              bounds.top -
-              frame.clientHeight / 2,
-          )
-        : frame.scrollTop,
-      behavior: "instant",
-    });
+    if (!frame || !svg) return;
+
+    const updateScrollable = () => {
+      setScrollable(
+        frame.scrollWidth > frame.clientWidth + 4 ||
+          frame.scrollHeight > frame.clientHeight + 4,
+      );
+    };
+
+    updateScrollable();
+
+    if (entry) {
+      const bounds = frame.getBoundingClientRect();
+      const node = entry.getBoundingClientRect();
+      const clippedX =
+        node.left < bounds.left + 16 || node.right > bounds.right - 16;
+      const clippedY =
+        node.top < bounds.top + 16 || node.bottom > bounds.bottom - 16;
+      frame.scrollTo({
+        left: clippedX
+          ? Math.max(
+              0,
+              frame.scrollLeft +
+                node.left +
+                node.width / 2 -
+                bounds.left -
+                frame.clientWidth / 2,
+            )
+          : frame.scrollLeft,
+        top: clippedY
+          ? Math.max(
+              0,
+              frame.scrollTop +
+                node.top +
+                node.height / 2 -
+                bounds.top -
+                frame.clientHeight / 2,
+            )
+          : frame.scrollTop,
+        behavior: "instant",
+      });
+    }
+
+    const observer = new ResizeObserver(updateScrollable);
+    observer.observe(frame);
+    return () => observer.disconnect();
   }, [svg]);
 
   return (
@@ -95,6 +112,11 @@ export function Diagram({ number, title, caption, code }: DiagramProps) {
           <div dangerouslySetInnerHTML={{ __html: svg }} />
         )}
       </div>
+      {scrollable && (
+        <p className="text-xs text-muted-foreground">
+          Scroll inside the box to pan the full diagram.
+        </p>
+      )}
     </figure>
   );
 }

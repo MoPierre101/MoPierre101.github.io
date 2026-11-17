@@ -19,7 +19,9 @@ export function TopBar() {
   return (
     <header className="site-header">
       <div className="site-container header-content">
-        <p className="site-name">{site.name}</p>
+        <SlideLink to="/" className="site-name">
+          {site.name}
+        </SlideLink>
         <nav aria-label="Pages" className="page-navigation">
           <div className="navigation-tabs">
             <span

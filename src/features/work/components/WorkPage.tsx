@@ -1,4 +1,5 @@
 import { ProjectCard } from "@/components/ProjectCard";
+import { site } from "@/config/site";
 import { projects } from "@/data/projects";
 
 /**
@@ -12,7 +13,7 @@ export function WorkPage() {
   return (
     <main className="site-container work-page" tabIndex={-1}>
       {/* Tab title (React moves this into <head>) */}
-      <title>Work</title>
+      <title>{`Work — ${site.name}`}</title>
       <h1 className="sr-only">Work</h1>
 
       {/* Project list */}

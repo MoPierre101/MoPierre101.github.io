@@ -1,3 +1,4 @@
+import { ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { Overview } from "@/types/project";
 import { Detail } from "./Detail";
@@ -20,8 +21,9 @@ export function OverviewSection({ overview }: { overview?: Overview }) {
 
   return (
     <section
+      id="overview"
       aria-label="Overview"
-      className="project-overview grid gap-9 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:gap-12"
+      className="project-overview scroll-mt-28 grid gap-9 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:gap-12"
     >
       {/* 3. Left column. Each Detail hides itself when its list is empty. */}
       <dl className="flex min-w-0 flex-col gap-7">
@@ -59,9 +61,10 @@ export function OverviewSection({ overview }: { overview?: Overview }) {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex min-h-11 items-center underline decoration-border underline-offset-4 transition-colors hover:decoration-current"
+                    className="inline-flex min-h-11 items-center gap-1 underline decoration-border underline-offset-4 transition-colors hover:decoration-current"
                   >
                     {link.label}
+                    <ArrowUpRight size={13} aria-hidden="true" />
                   </a>
                 </li>
               ))}

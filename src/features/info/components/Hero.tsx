@@ -21,7 +21,7 @@ export function Hero() {
               href="https://www.farmingdale.edu/curriculum/bs-cpis.shtml"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-inherit no-underline"
+              className="text-inherit underline decoration-border underline-offset-[0.3em] transition-colors hover:decoration-current"
             >
               {hero.education}
             </a>

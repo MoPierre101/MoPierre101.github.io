@@ -3,7 +3,7 @@ import type { Project } from "@/types/project";
 export const starchart: Project = {
   id: "starchart",
   title: "StarChart",
-  date: { start: "September 2026", end: "Present" },
+  date: { start: "September 2026", end: "November 2026" },
   summary:
     "A data pipeline (automated import process) that cleans the Grand Comics Database into a Postgres database for 13 publishers of US comics, with a read-only search API (lookup service) on top.",
   overview: {

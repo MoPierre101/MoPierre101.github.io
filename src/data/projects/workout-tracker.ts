@@ -29,14 +29,14 @@ export const workoutTracker: Project = {
     {
       title: "Video discovery and playback",
       caption:
-        "The controller lists Firebase Storage objects (cloud-stored video files), filters them by category or search term, and passes a media URL (streaming link) to the JavaFX player. This diagram covers my video-library contribution.",
+        "The controller lists Firebase Storage objects (cloud-stored video files), filters them by category or search term, and passes a media URL (streaming link) to the JavaFX player. This diagram covers the video-library subsystem.",
       mermaid:
         "flowchart TD\n  A[Exercise library] --> B[Choose level and body area]\n  A --> C[Enter search term]\n  B --> D[VideosController<br/>library logic]\n  C --> D\n  D --> E[List objects in Firebase Storage<br/>cloud video files]\n  E --> F[Filter by type metadata<br/>category tag or filename]\n  F --> I[Construct Firebase media URLs<br/>streaming links]\n  I --> G[Display selectable video results]\n  G --> H[Select a demonstration]\n  H --> J[JavaFX MediaPlayer<br/>in-app video player]\n  K[Firebase-hosted MP4] -->|Media URL| J\n  J --> L[Watch, pause, resume, and loop]\n  L --> M[Back to previous results]",
     },
   ],
   stories: [
     {
-      id: "US-01",
+      id: "US-1",
       story:
         "As a gym goer, I want to browse exercises by difficulty and body area so that I can find demonstrations relevant to my workout.",
       criteria: [
@@ -47,7 +47,7 @@ export const workoutTracker: Project = {
       ],
     },
     {
-      id: "US-02",
+      id: "US-2",
       story:
         "As a gym goer who knows an exercise name, I want to search the library so that I can find its demonstration without browsing every category.",
       criteria: [
@@ -58,7 +58,7 @@ export const workoutTracker: Project = {
       ],
     },
     {
-      id: "US-03",
+      id: "US-3",
       story:
         "As a gym goer, I want to watch a selected demonstration inside the application so that I can review the movement from the same place I found it.",
       criteria: [
@@ -69,7 +69,7 @@ export const workoutTracker: Project = {
       ],
     },
     {
-      id: "US-04",
+      id: "US-4",
       story:
         "As a gym goer learning a movement, I want to pause, resume, and repeatedly watch a demonstration so that I can review it at my own pace.",
       criteria: [
@@ -79,7 +79,7 @@ export const workoutTracker: Project = {
       ],
     },
     {
-      id: "US-05",
+      id: "US-5",
       story:
         "As a gym goer comparing exercises, I want to return from a video to my previous results so that I can choose another demonstration without repeating my search or category selection.",
       criteria: [
@@ -95,9 +95,9 @@ export const workoutTracker: Project = {
       title:
         "Stream Firebase-hosted videos instead of requiring advance downloads",
       context:
-        "I wanted gym goers to watch exercise demonstrations without having to download video files to their devices before viewing them.",
+        "Gym goers need to watch exercise demonstrations without having to download video files to their devices before viewing them.",
       choice:
-        "I chose Firebase Storage (cloud file storage) to host the MP4 videos and built URL-based playback in JavaFX. The controller constructs media URLs (streaming links) from object names (file paths) and download-token metadata (secure access keys) and passes them to MediaPlayer (the built-in video player).",
+        "Firebase Storage (cloud file storage) hosts the MP4 videos for URL-based playback in JavaFX. The controller constructs media URLs (streaming links) from object names (file paths) and download-token metadata (secure access keys) and passes them to MediaPlayer (the built-in video player).",
       tradeoff:
         "Users can watch without managing video downloads in advance, but streaming depends on internet access, storage availability, and valid media URLs.",
     },
@@ -113,9 +113,9 @@ export const workoutTracker: Project = {
     {
       title: "Use storage folders and metadata as the category catalog",
       context:
-        "A key technical challenge was accessing the Firebase-hosted videos and mapping each storage folder to the correct category in the exercise library.",
+        "Accessing the Firebase-hosted videos requires mapping each storage folder to the correct category in the exercise library.",
       choice:
-        "I mapped folder prefixes such as bu/ (Beginner Upper) and ic/ (Intermediate Core) to type metadata (category tags attached to each file) during initialization, then used that metadata to filter videos for each category and generated selection buttons from the filenames.",
+        "Folder prefixes such as bu/ (Beginner Upper) and ic/ (Intermediate Core) map to type metadata (category tags attached to each file) during initialization, and that metadata filters videos for each category while selection buttons are generated from the filenames.",
       tradeoff:
         "This connects stored files directly to the library without a separate video-catalog database, but depends on consistent naming and adds storage reads and metadata writes during initialization (app startup).",
     },
