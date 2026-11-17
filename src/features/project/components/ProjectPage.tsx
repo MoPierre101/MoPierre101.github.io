@@ -29,8 +29,12 @@ export function ProjectPage() {
   // An unknown id falls through to the not-found page.
   if (!project) return <Navigate to="/404" replace />;
 
-  const { problem, users = [], stack = [], links = [] } =
-    project.overview ?? {};
+  const {
+    problem,
+    users = [],
+    stack = [],
+    links = [],
+  } = project.overview ?? {};
   const hasOverview = Boolean(
     problem || users.length || stack.length || links.length,
   );
